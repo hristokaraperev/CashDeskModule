@@ -25,10 +25,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Integration tests for the Cash Desk Module.
  * Tests end-to-end scenarios from CLAUDE.md requirements.
+ * Uses test profile to avoid interfering with production data.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
 @DisplayName("Cash Desk Integration Tests")
+@org.springframework.test.context.ActiveProfiles("test")
 class CashDeskIntegrationTest {
 
     private static final String API_KEY = "f9Uie8nNf112hx8s";
