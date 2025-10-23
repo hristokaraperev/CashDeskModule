@@ -31,7 +31,7 @@ public class BalanceQueryServiceImpl implements BalanceQueryService {
     private final BalanceRepository balanceRepository;
     private final TransactionRepository transactionRepository;
 
-    @Value("${cashdesk.cashiers.names}")
+    @Value("#{'${cashdesk.cashiers.names}'.split(',')}")
     private List<String> allCashiers;
 
     public BalanceQueryServiceImpl(

@@ -30,7 +30,7 @@ public class FileBalanceRepository implements BalanceRepository {
     @Value("${cashdesk.storage.balance-file}")
     private String balanceFilePath;
 
-    @Value("${cashdesk.cashiers.names}")
+    @Value("#{'${cashdesk.cashiers.names}'.split(',')}")
     private List<String> cashierNames;
 
     private final Map<String, Map<Currency, CashBalance>> balancesCache = new ConcurrentHashMap<>();

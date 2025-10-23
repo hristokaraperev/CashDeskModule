@@ -40,10 +40,7 @@ cashdesk:
           10: 100
           20: 0
           50: 20
-    names:
-      - MARTINA
-      - PETER
-      - LINDA
+    names: MARTINA,PETER,LINDA
 
 logging:
   level:
