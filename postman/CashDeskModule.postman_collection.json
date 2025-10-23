@@ -1,0 +1,326 @@
+{
+  "info": {
+    "name": "Cash Desk Module",
+    "description": "API collection for Cash Desk Module operations",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Cash Operations",
+      "item": [
+        {
+          "name": "Deposit - MARTINA - 600 BGN",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "FIB-X-AUTH",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operationType\": \"DEPOSIT\",\n  \"cashier\": \"MARTINA\",\n  \"currency\": \"BGN\",\n  \"amount\": 600.00,\n  \"denominations\": {\n    \"10\": 10,\n    \"50\": 10\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cash-operation",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cash-operation"]
+            }
+          }
+        },
+        {
+          "name": "Withdrawal - PETER - 500 EUR",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "FIB-X-AUTH",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operationType\": \"WITHDRAWAL\",\n  \"cashier\": \"PETER\",\n  \"currency\": \"EUR\",\n  \"amount\": 500.00,\n  \"denominations\": {\n    \"50\": 10\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cash-operation",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cash-operation"]
+            }
+          }
+        },
+        {
+          "name": "Deposit - LINDA - 200 EUR",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "FIB-X-AUTH",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operationType\": \"DEPOSIT\",\n  \"cashier\": \"LINDA\",\n  \"currency\": \"EUR\",\n  \"amount\": 200.00,\n  \"denominations\": {\n    \"20\": 5,\n    \"50\": 2\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cash-operation",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cash-operation"]
+            }
+          }
+        },
+        {
+          "name": "Withdrawal - MARTINA - 100 BGN",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "FIB-X-AUTH",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operationType\": \"WITHDRAWAL\",\n  \"cashier\": \"MARTINA\",\n  \"currency\": \"BGN\",\n  \"amount\": 100.00,\n  \"denominations\": {\n    \"10\": 5,\n    \"50\": 1\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cash-operation",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cash-operation"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Balance Queries",
+      "item": [
+        {
+          "name": "Get All Balances",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "FIB-X-AUTH",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cash-balance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cash-balance"]
+            }
+          }
+        },
+        {
+          "name": "Get Balance for MARTINA",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "FIB-X-AUTH",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cash-balance?cashier=MARTINA",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cash-balance"],
+              "query": [
+                {
+                  "key": "cashier",
+                  "value": "MARTINA"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Balance with Date Range",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "FIB-X-AUTH",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cash-balance?dateFrom=2024-10-20T00:00:00Z&dateTo=2024-10-24T23:59:59Z",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cash-balance"],
+              "query": [
+                {
+                  "key": "dateFrom",
+                  "value": "2024-10-20T00:00:00Z"
+                },
+                {
+                  "key": "dateTo",
+                  "value": "2024-10-24T23:59:59Z"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Balance for PETER with Date Range",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "FIB-X-AUTH",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cash-balance?cashier=PETER&dateFrom=2024-10-20T00:00:00Z&dateTo=2024-10-24T23:59:59Z",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cash-balance"],
+              "query": [
+                {
+                  "key": "cashier",
+                  "value": "PETER"
+                },
+                {
+                  "key": "dateFrom",
+                  "value": "2024-10-20T00:00:00Z"
+                },
+                {
+                  "key": "dateTo",
+                  "value": "2024-10-24T23:59:59Z"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "Invalid API Key",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "FIB-X-AUTH",
+                "value": "invalid-key"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cash-balance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cash-balance"]
+            }
+          }
+        },
+        {
+          "name": "Missing API Key",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cash-balance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cash-balance"]
+            }
+          }
+        },
+        {
+          "name": "Invalid Cashier",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "FIB-X-AUTH",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operationType\": \"DEPOSIT\",\n  \"cashier\": \"INVALID\",\n  \"currency\": \"BGN\",\n  \"amount\": 100.00,\n  \"denominations\": {\n    \"10\": 10\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cash-operation",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cash-operation"]
+            }
+          }
+        },
+        {
+          "name": "Insufficient Funds",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "FIB-X-AUTH",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operationType\": \"WITHDRAWAL\",\n  \"cashier\": \"MARTINA\",\n  \"currency\": \"BGN\",\n  \"amount\": 10000.00,\n  \"denominations\": {\n    \"50\": 200\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cash-operation",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cash-operation"]
+            }
+          }
+        },
+        {
+          "name": "Invalid Denomination Sum",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "FIB-X-AUTH",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operationType\": \"DEPOSIT\",\n  \"cashier\": \"MARTINA\",\n  \"currency\": \"BGN\",\n  \"amount\": 600.00,\n  \"denominations\": {\n    \"10\": 10,\n    \"50\": 5\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cash-operation",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cash-operation"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
