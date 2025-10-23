@@ -1,0 +1,61 @@
+spring:
+  application:
+    name: cash-desk-module
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      indent-output: true
+    default-property-inclusion: non_null
+
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: never
+  compression:
+    enabled: true
+    mime-types: application/json,text/plain
+
+cashdesk:
+  security:
+    api-key: f9Uie8nNf112hx8s
+    header-name: FIB-X-AUTH
+
+  storage:
+    transaction-file: data/transactions.txt
+    balance-file: data/balances.txt
+
+  cashiers:
+    initial-balances:
+      bgn:
+        amount: 1000.00
+        denominations:
+          10: 50
+          50: 10
+      eur:
+        amount: 2000.00
+        denominations:
+          10: 100
+          20: 0
+          50: 20
+    names:
+      - MARTINA
+      - PETER
+      - LINDA
+
+logging:
+  level:
+    com.fibank.cashdesk: INFO
+    org.springframework: WARN
+    org.springframework.web: WARN
+  pattern:
+    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n'
+  file:
+    name: logs/cashdesk.log
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 30
+      total-size-cap: 300MB
