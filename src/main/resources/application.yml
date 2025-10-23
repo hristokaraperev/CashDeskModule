@@ -24,8 +24,23 @@ cashdesk:
     header-name: FIB-X-AUTH
 
   storage:
-    transaction-file: data/transactions.txt
-    balance-file: data/balances.txt
+    # Data directory - stored outside JAR for persistence across deployments
+    # Uses ${user.home}/.cashdesk by default, can be overridden with environment variable
+    data-dir: ${CASHDESK_DATA_DIR:${user.home}/.cashdesk/data}
+    transaction-file: ${cashdesk.storage.data-dir}/transactions.txt
+    balance-file: ${cashdesk.storage.data-dir}/balances.txt
+
+  backup:
+    # Backup configuration for data protection and disaster recovery
+    enabled: ${CASHDESK_BACKUP_ENABLED:true}
+    directory: ${CASHDESK_BACKUP_DIR:${user.home}/.cashdesk/backups}
+    # Cron expression: Daily at 2 AM (0 0 2 * * *)
+    # For testing: every 4 hours (0 0 */4 * * *)
+    schedule: ${CASHDESK_BACKUP_SCHEDULE:0 0 2 * * *}
+    retention:
+      max-backups: 30        # Keep last 30 backups
+      max-age-days: 90       # Delete backups older than 90 days
+    compression: true        # Compress backups to save space
 
   cashiers:
     initial-balances:
