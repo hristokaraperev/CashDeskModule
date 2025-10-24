@@ -20,6 +20,11 @@
               {
                 "key": "FIB-X-AUTH",
                 "value": "{{apiKey}}"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}",
+                "description": "Mandatory idempotency key in UUID format to prevent duplicate processing"
               }
             ],
             "body": {
@@ -45,6 +50,11 @@
               {
                 "key": "FIB-X-AUTH",
                 "value": "{{apiKey}}"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}",
+                "description": "Mandatory idempotency key in UUID format to prevent duplicate processing"
               }
             ],
             "body": {
@@ -70,6 +80,11 @@
               {
                 "key": "FIB-X-AUTH",
                 "value": "{{apiKey}}"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}",
+                "description": "Mandatory idempotency key in UUID format to prevent duplicate processing"
               }
             ],
             "body": {
@@ -95,6 +110,11 @@
               {
                 "key": "FIB-X-AUTH",
                 "value": "{{apiKey}}"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}",
+                "description": "Mandatory idempotency key in UUID format to prevent duplicate processing"
               }
             ],
             "body": {
@@ -231,8 +251,8 @@
               },
               {
                 "key": "Idempotency-Key",
-                "value": "test-idempotency-12345",
-                "description": "Unique idempotency key to prevent duplicate processing"
+                "value": "550e8400-e29b-41d4-a716-446655440000",
+                "description": "Unique idempotency key in UUID format to prevent duplicate processing"
               }
             ],
             "body": {
@@ -262,8 +282,8 @@
               },
               {
                 "key": "Idempotency-Key",
-                "value": "test-idempotency-12345",
-                "description": "Same idempotency key as previous request"
+                "value": "550e8400-e29b-41d4-a716-446655440000",
+                "description": "Same idempotency key as previous request (UUID format)"
               }
             ],
             "body": {
@@ -293,8 +313,8 @@
               },
               {
                 "key": "Idempotency-Key",
-                "value": "test-idempotency-67890",
-                "description": "Different idempotency key - will process as new transaction"
+                "value": "a1b2c3d4-e5f6-4789-a012-3456789abcde",
+                "description": "Different idempotency key in UUID format - will process as new transaction"
               }
             ],
             "body": {
@@ -332,7 +352,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "cash-operation"]
             },
-            "description": "Request without idempotency key. This works normally - idempotency is optional."
+            "description": "Request without idempotency key. This will fail with 400 Bad Request because Idempotency-Key is now mandatory."
           }
         },
         {
@@ -350,8 +370,8 @@
               },
               {
                 "key": "Idempotency-Key",
-                "value": "retry-scenario-abc123",
-                "description": "Idempotency key for retry scenario"
+                "value": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+                "description": "Idempotency key in UUID format for retry scenario"
               }
             ],
             "body": {
@@ -381,8 +401,8 @@
               },
               {
                 "key": "Idempotency-Key",
-                "value": "retry-scenario-abc123",
-                "description": "SAME idempotency key as previous request"
+                "value": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+                "description": "SAME idempotency key as previous request (UUID format)"
               }
             ],
             "body": {
@@ -444,6 +464,11 @@
               {
                 "key": "FIB-X-AUTH",
                 "value": "{{apiKey}}"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}",
+                "description": "Mandatory idempotency key in UUID format to prevent duplicate processing"
               }
             ],
             "body": {
@@ -469,6 +494,11 @@
               {
                 "key": "FIB-X-AUTH",
                 "value": "{{apiKey}}"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}",
+                "description": "Mandatory idempotency key in UUID format to prevent duplicate processing"
               }
             ],
             "body": {
@@ -494,6 +524,11 @@
               {
                 "key": "FIB-X-AUTH",
                 "value": "{{apiKey}}"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}",
+                "description": "Mandatory idempotency key in UUID format to prevent duplicate processing"
               }
             ],
             "body": {
@@ -505,6 +540,37 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "cash-operation"]
             }
+          }
+        },
+        {
+          "name": "Invalid Idempotency Key Format",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "FIB-X-AUTH",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "not-a-valid-uuid",
+                "description": "Invalid idempotency key - not in UUID format"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operationType\": \"DEPOSIT\",\n  \"cashier\": \"MARTINA\",\n  \"currency\": \"BGN\",\n  \"amount\": 100.00,\n  \"denominations\": {\n    \"10\": 10\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cash-operation",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cash-operation"]
+            },
+            "description": "Request with invalid idempotency key format. Should fail with 400 Bad Request because the key must be in UUID format."
           }
         }
       ]
