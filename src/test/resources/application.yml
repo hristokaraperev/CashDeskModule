@@ -10,9 +10,17 @@ spring:
 
 server:
   port: 0  # Random port for tests to avoid conflicts
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: never
 
 cashdesk:
   security:
+    # Production uses only the hash. For tests, we need the plain value to send in request headers.
+    # The test plain value below hashes to the api-key-hash value.
+    # In production, this plain value would be provided by clients and never stored in config.
+    test-api-key: f9Uie8nNf112hx8s
     api-key-hash: fa82ed811150db64f564c4a0dcc69520d17178cf37703e161a3829018ff8d765
     header-name: FIB-X-AUTH
 
@@ -21,10 +29,10 @@ cashdesk:
 
   storage:
     # CRITICAL: Use separate test data directory to avoid interfering with production data
-    # This directory will be created in the system temp directory and cleaned up after tests
-    data-dir: ${java.io.tmpdir}/cashdesk-test-data
-    transaction-file: ${cashdesk.storage.data-dir}/transactions-test.txt
-    balance-file: ${cashdesk.storage.data-dir}/balances-test.txt
+    # Uses temp directory with random UUID for complete test isolation
+    data-dir: ${java.io.tmpdir}/cashdesk-test-${random.uuid}
+    transaction-file: ${cashdesk.storage.data-dir}/transactions.txt
+    balance-file: ${cashdesk.storage.data-dir}/balances.txt
 
   backup:
     # Disable backups during tests
