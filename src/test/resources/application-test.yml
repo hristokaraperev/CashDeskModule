@@ -17,7 +17,7 @@ server:
 
 cashdesk:
   security:
-    api-key: f9Uie8nNf112hx8s
+    api-key-hash: fa82ed811150db64f564c4a0dcc69520d17178cf37703e161a3829018ff8d765
     header-name: FIB-X-AUTH
 
   storage:
