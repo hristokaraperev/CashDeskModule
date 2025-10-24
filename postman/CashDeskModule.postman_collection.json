@@ -184,7 +184,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/cash-balance?dateFrom=2024-10-20T00:00:00Z&dateTo=2024-10-24T23:59:59Z",
+              "raw": "{{baseUrl}}/api/v1/cash-balance?dateFrom=2025-10-20T00:00:00Z&dateTo=2025-10-24T23:59:59Z",
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "cash-balance"],
               "query": [
@@ -211,7 +211,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/cash-balance?cashier=PETER&dateFrom=2024-10-20T00:00:00Z&dateTo=2024-10-24T23:59:59Z",
+              "raw": "{{baseUrl}}/api/v1/cash-balance?cashier=PETER&dateFrom=2025-10-20T00:00:00Z&dateTo=2025-10-24T23:59:59Z",
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "cash-balance"],
               "query": [
