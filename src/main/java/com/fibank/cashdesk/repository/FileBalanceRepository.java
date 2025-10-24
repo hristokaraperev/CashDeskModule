@@ -38,7 +38,6 @@ public class FileBalanceRepository implements BalanceRepository {
 
     @PostConstruct
     public void initialize() {
-        // Initialize locks for each cashier
         for (String cashier : cashierNames) {
             cashierLocks.put(cashier, new ReentrantReadWriteLock());
         }
@@ -74,7 +73,6 @@ public class FileBalanceRepository implements BalanceRepository {
             throw new FileStorageException("Failed to load balances from file", e);
         }
 
-        // Ensure all cashiers have entries
         for (String cashier : cashierNames) {
             balancesCache.putIfAbsent(cashier, new HashMap<>());
             for (Currency currency : Currency.values()) {
@@ -128,10 +126,8 @@ public class FileBalanceRepository implements BalanceRepository {
         File tempFile = new File(file.getParentFile(), "balances.tmp");
 
         try {
-            // Ensure parent directory exists
             Files.createDirectories(file.getParentFile().toPath());
 
-            // Write to temp file
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
                 for (String cashier : allBalances.keySet()) {
                     Map<Currency, CashBalance> cashierBalances = allBalances.get(cashier);
@@ -153,12 +149,10 @@ public class FileBalanceRepository implements BalanceRepository {
                 }
             }
 
-            // Atomic rename
             Files.move(tempFile.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
             log.debug("Saved all balances to file");
 
         } catch (IOException e) {
-            // Clean up temp file on error
             if (tempFile.exists()) {
                 tempFile.delete();
             }
@@ -179,7 +173,7 @@ public class FileBalanceRepository implements BalanceRepository {
             if (balances == null) {
                 return new HashMap<>();
             }
-            // Return defensive copy
+
             Map<Currency, CashBalance> copy = new HashMap<>();
             for (Map.Entry<Currency, CashBalance> entry : balances.entrySet()) {
                 copy.put(entry.getKey(), new CashBalance(entry.getKey(), entry.getValue().getDenominations()));

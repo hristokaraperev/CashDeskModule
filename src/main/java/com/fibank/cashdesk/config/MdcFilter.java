@@ -15,7 +15,7 @@ import java.io.IOException;
  * Generates correlation IDs for request tracing and ensures proper cleanup.
  */
 @Component
-@Order(1) // Execute before other filters
+@Order(1)
 public class MdcFilter implements Filter {
 
     private static final Logger log = LoggerFactory.getLogger(MdcFilter.class);
@@ -27,7 +27,6 @@ public class MdcFilter implements Filter {
 
         try {
             if (request instanceof HttpServletRequest httpRequest) {
-                // Try to get correlation ID from request header, or generate new one
                 String correlationId = httpRequest.getHeader(CORRELATION_ID_HEADER);
 
                 if (correlationId == null || correlationId.isBlank()) {
@@ -38,17 +37,14 @@ public class MdcFilter implements Filter {
                     log.debug("Using correlation ID from header: {}", correlationId);
                 }
 
-                // Add correlation ID to response header for client tracking
                 if (response instanceof jakarta.servlet.http.HttpServletResponse httpResponse) {
                     httpResponse.setHeader(CORRELATION_ID_HEADER, correlationId);
                 }
             }
 
-            // Continue with the request
             chain.doFilter(request, response);
 
         } finally {
-            // Always clear MDC after request to prevent memory leaks in thread pools
             MdcUtil.clear();
         }
     }

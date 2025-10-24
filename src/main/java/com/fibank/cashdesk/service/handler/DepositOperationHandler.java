@@ -25,13 +25,8 @@ public class DepositOperationHandler implements CashOperationHandler {
 
     @Override
     public void handle(CashBalance balance, Currency currency, BigDecimal amount, Map<Integer, Integer> denominations) {
-        // Validate denominations sum to amount
         CashBalance.validateDenominationSum(denominations, amount);
-
-        // Validate denominations are valid for currency
         currency.validateDenominations(denominations);
-
-        // Add denominations to balance
         balance.addDenominations(denominations);
 
         log.debug("Deposit processed: {} {} with denominations {}", amount, currency, denominations);

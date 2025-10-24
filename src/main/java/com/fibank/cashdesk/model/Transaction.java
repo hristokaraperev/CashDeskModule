@@ -44,14 +44,12 @@ public final class Transaction {
         this.operationType = Objects.requireNonNull(operationType, "Operation type cannot be null");
         this.currency = Objects.requireNonNull(currency, "Currency cannot be null");
         this.amount = Objects.requireNonNull(amount, "Amount cannot be null");
-        this.denominations = Map.copyOf(denominations); // Immutable copy
+        this.denominations = Map.copyOf(denominations);
 
-        // Validate amount is positive
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Amount must be positive");
         }
 
-        // Validate denominations
         currency.validateDenominations(denominations);
         CashBalance.validateDenominationSum(denominations, amount);
     }
@@ -76,8 +74,6 @@ public final class Transaction {
             denominations
         );
     }
-
-    // Getters only (no setters - immutable)
 
     public UUID getId() {
         return id;
@@ -108,7 +104,7 @@ public final class Transaction {
      * @return Immutable copy of denominations
      */
     public Map<Integer, Integer> getDenominations() {
-        return denominations; // Already immutable from constructor
+        return denominations;
     }
 
     /**
@@ -132,7 +128,7 @@ public final class Transaction {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Transaction that = (Transaction) o;
-        return Objects.equals(id, that.id); // Identity by ID
+        return Objects.equals(id, that.id);
     }
 
     @Override

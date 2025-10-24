@@ -65,7 +65,6 @@ public class IdempotencyServiceImpl implements IdempotencyService {
             return Optional.empty();
         }
 
-        // Check if expired
         if (cached.isExpired()) {
             log.debug("Cached response for key {} has expired, removing from cache", idempotencyKey);
             cache.remove(idempotencyKey);
@@ -110,7 +109,6 @@ public class IdempotencyServiceImpl implements IdempotencyService {
             return false;
         }
 
-        // Check if expired
         if (cached.isExpired()) {
             cache.remove(idempotencyKey);
             return false;

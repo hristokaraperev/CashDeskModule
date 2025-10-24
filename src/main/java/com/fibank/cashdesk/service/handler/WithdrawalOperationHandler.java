@@ -26,13 +26,9 @@ public class WithdrawalOperationHandler implements CashOperationHandler {
 
     @Override
     public void handle(CashBalance balance, Currency currency, BigDecimal amount, Map<Integer, Integer> denominations) {
-        // Validate denominations sum to amount
         CashBalance.validateDenominationSum(denominations, amount);
-
-        // Validate denominations are valid for currency
         currency.validateDenominations(denominations);
 
-        // Check if sufficient denominations are available
         if (!balance.hasSufficientDenominations(denominations)) {
             BigDecimal currentTotal = balance.calculateTotal();
             throw new InsufficientFundsException(
@@ -41,7 +37,6 @@ public class WithdrawalOperationHandler implements CashOperationHandler {
             );
         }
 
-        // Remove denominations from balance
         balance.removeDenominations(denominations);
 
         log.debug("Withdrawal processed: {} {} with denominations {}", amount, currency, denominations);

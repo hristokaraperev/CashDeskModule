@@ -23,10 +23,8 @@ public class CashBalance {
         this.currency = Objects.requireNonNull(currency, "Currency cannot be null");
         this.denominations = new HashMap<>(initialDenominations);
 
-        // Validate all denominations are valid for this currency
         currency.validateDenominations(this.denominations);
 
-        // Ensure all valid denominations are present (with zero if not provided)
         for (Integer validDenom : currency.getValidDenominations()) {
             denominations.putIfAbsent(validDenom, 0);
         }
@@ -109,14 +107,12 @@ public class CashBalance {
     public void removeDenominations(Map<Integer, Integer> toRemove) {
         currency.validateDenominations(toRemove);
 
-        // First check if we have sufficient denominations (don't modify state if not)
         if (!hasSufficientDenominations(toRemove)) {
             throw new InsufficientFundsException(
                 buildInsufficientDenominationsMessage(toRemove)
             );
         }
 
-        // Now perform the removal
         for (Map.Entry<Integer, Integer> entry : toRemove.entrySet()) {
             int denomination = entry.getKey();
             int countToRemove = entry.getValue();

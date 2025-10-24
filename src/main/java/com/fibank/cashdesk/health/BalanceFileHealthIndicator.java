@@ -41,7 +41,6 @@ public class BalanceFileHealthIndicator implements HealthIndicator {
             File balanceFile = balancePath.toFile();
             File dataDirFile = dataDirPath.toFile();
 
-            // Check data directory exists
             if (!dataDirFile.exists()) {
                 log.warn("Health check: Data directory does not exist: {}", dataDir);
                 return Health.down()
@@ -51,7 +50,6 @@ public class BalanceFileHealthIndicator implements HealthIndicator {
                         .build();
             }
 
-            // Check data directory is actually a directory
             if (!dataDirFile.isDirectory()) {
                 log.error("Health check: Data directory path exists but is not a directory: {}", dataDir);
                 return Health.down()
@@ -61,7 +59,6 @@ public class BalanceFileHealthIndicator implements HealthIndicator {
                         .build();
             }
 
-            // Check file accessibility
             if (!balanceFile.exists()) {
                 log.warn("Health check: Balance file does not exist: {}", balanceFilePath);
                 return Health.down()
@@ -70,7 +67,6 @@ public class BalanceFileHealthIndicator implements HealthIndicator {
                         .build();
             }
 
-            // Check file is readable
             if (!balanceFile.canRead()) {
                 log.error("Health check: Balance file is not readable: {}", balanceFilePath);
                 return Health.down()
@@ -79,7 +75,6 @@ public class BalanceFileHealthIndicator implements HealthIndicator {
                         .build();
             }
 
-            // Check file is writable
             if (!balanceFile.canWrite()) {
                 log.error("Health check: Balance file is not writable: {}", balanceFilePath);
                 return Health.down()
@@ -88,7 +83,6 @@ public class BalanceFileHealthIndicator implements HealthIndicator {
                         .build();
             }
 
-            // Check disk space
             long freeSpaceMB = dataDirFile.getUsableSpace() / (1024 * 1024);
             if (freeSpaceMB < MIN_FREE_DISK_SPACE_MB) {
                 log.error("Health check: Low disk space: {} MB available, minimum required: {} MB",
@@ -101,7 +95,6 @@ public class BalanceFileHealthIndicator implements HealthIndicator {
                         .build();
             }
 
-            // Check file size is reasonable (potential corruption detection)
             long fileSizeMB = balanceFile.length() / (1024 * 1024);
             if (fileSizeMB > MAX_REASONABLE_FILE_SIZE_MB) {
                 log.warn("Health check: Balance file size is unusually large: {} MB", fileSizeMB);
@@ -113,7 +106,6 @@ public class BalanceFileHealthIndicator implements HealthIndicator {
                         .build();
             }
 
-            // All checks passed
             log.debug("Health check: Balance file is healthy");
             return Health.up()
                     .withDetail("balanceFile", balanceFilePath)

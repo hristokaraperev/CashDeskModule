@@ -54,17 +54,14 @@ public class BalanceQueryServiceImpl implements BalanceQueryService {
 
     @Override
     public BalanceQueryResponse queryBalance(Instant dateFrom, Instant dateTo, String cashier) {
-        // Validate date range
         if (dateFrom != null && dateTo != null && dateFrom.isAfter(dateTo)) {
             throw new InvalidDateRangeException("dateFrom must be before or equal to dateTo");
         }
 
-        // Set MDC context for structured logging
         if (cashier != null) {
             MdcUtil.setCashier(cashier.toUpperCase());
         }
 
-        // Determine which cashiers to query
         List<String> cashiersToQuery = (cashier != null)
             ? List.of(cashier.toUpperCase())
             : allCashiers;
@@ -72,12 +69,10 @@ public class BalanceQueryServiceImpl implements BalanceQueryService {
         List<CashierBalanceDTO> cashierBalances = new ArrayList<>();
 
         for (String cashierName : cashiersToQuery) {
-            // If date range specified, return period summary
             if (dateFrom != null || dateTo != null) {
                 List<PeriodSummaryDTO> periodSummaries = calculatePeriodSummary(cashierName, dateFrom, dateTo);
                 cashierBalances.add(new CashierBalanceDTO(cashierName, periodSummaries, true));
             } else {
-                // Otherwise, use current balance
                 Map<Currency, CashBalance> balances = balanceRepository.findByCashier(cashierName);
                 List<CurrencyBalanceDTO> currencyBalances = balances.entrySet().stream()
                     .map(entry -> new CurrencyBalanceDTO(
@@ -111,11 +106,9 @@ public class BalanceQueryServiceImpl implements BalanceQueryService {
         log.debug("calculatePeriodSummary: cashier={}, from={}, to={}", cashier, from, to);
 
         for (Currency currency : Currency.values()) {
-            // Calculate starting balance (balance at dateFrom, or initial if dateFrom is null)
             Map<Integer, Integer> startingDenominations = calculateBalanceAtDate(cashier, currency, from);
             BigDecimal startingTotal = calculateTotalFromDenominations(startingDenominations);
 
-            // Get transactions within the period
             List<Transaction> periodTransactions = transactionRepository
                 .findByCashierAndDateRange(cashier, from, to)
                 .stream()
@@ -126,7 +119,6 @@ public class BalanceQueryServiceImpl implements BalanceQueryService {
             log.debug("Currency {}: found {} transactions in period", currency, periodTransactions.size());
             periodTransactions.forEach(txn -> log.debug("  Transaction: {}", txn));
 
-            // Calculate ending balance (starting balance + transactions)
             Map<Integer, Integer> endingDenominations = new HashMap<>(startingDenominations);
             BigDecimal netChange = BigDecimal.ZERO;
 
@@ -135,7 +127,7 @@ public class BalanceQueryServiceImpl implements BalanceQueryService {
                 if (txn.getOperationType() == OperationType.DEPOSIT) {
                     addDenominations(endingDenominations, txnDenoms);
                     netChange = netChange.add(txn.getAmount());
-                } else { // WITHDRAWAL
+                } else {
                     subtractDenominations(endingDenominations, txnDenoms);
                     netChange = netChange.subtract(txn.getAmount());
                 }
@@ -143,7 +135,6 @@ public class BalanceQueryServiceImpl implements BalanceQueryService {
 
             BigDecimal endingTotal = calculateTotalFromDenominations(endingDenominations);
 
-            // Convert transactions to DTOs
             List<TransactionDTO> transactionDTOs = periodTransactions.stream()
                 .map(txn -> new TransactionDTO(
                     txn.getId(),
@@ -184,20 +175,17 @@ public class BalanceQueryServiceImpl implements BalanceQueryService {
      */
     private Map<Integer, Integer> calculateBalanceAtDate(String cashier, Currency currency, Instant date) {
         if (date == null) {
-            // Return initial balance
             log.debug("calculateBalanceAtDate: date is null, returning initial balance for {}", currency);
             return getInitialDenominations(currency);
         }
 
-        // Start with initial balance
         Map<Integer, Integer> balance = new HashMap<>(getInitialDenominations(currency));
 
-        // Replay all transactions STRICTLY BEFORE the specified date (not including transactions AT the date)
         List<Transaction> transactionsBeforeDate = transactionRepository
-            .findByCashierAndDateRange(cashier, null, null)  // Get all transactions for this cashier
+            .findByCashierAndDateRange(cashier, null, null)
             .stream()
             .filter(txn -> txn.getCurrency() == currency)
-            .filter(txn -> txn.getTimestamp().isBefore(date))  // Strictly before, not including
+            .filter(txn -> txn.getTimestamp().isBefore(date))
             .sorted(Comparator.comparing(Transaction::getTimestamp))
             .collect(Collectors.toList());
 
@@ -207,7 +195,7 @@ public class BalanceQueryServiceImpl implements BalanceQueryService {
         for (Transaction txn : transactionsBeforeDate) {
             if (txn.getOperationType() == OperationType.DEPOSIT) {
                 addDenominations(balance, txn.getDenominations());
-            } else { // WITHDRAWAL
+            } else {
                 subtractDenominations(balance, txn.getDenominations());
             }
         }
@@ -222,11 +210,9 @@ public class BalanceQueryServiceImpl implements BalanceQueryService {
         Map<Integer, Integer> initial = new HashMap<>();
 
         if (currency == Currency.BGN) {
-            // 1000 BGN: 50x10 BGN + 10x50 BGN
             initial.put(10, 50);
             initial.put(50, 10);
-        } else { // EUR
-            // 2000 EUR: 100x10 EUR + 20x50 EUR
+        } else {
             initial.put(10, 100);
             initial.put(20, 0);
             initial.put(50, 20);
@@ -235,18 +221,12 @@ public class BalanceQueryServiceImpl implements BalanceQueryService {
         return initial;
     }
 
-    /**
-     * Add denominations to a balance.
-     */
     private void addDenominations(Map<Integer, Integer> balance, Map<Integer, Integer> toAdd) {
         for (Map.Entry<Integer, Integer> entry : toAdd.entrySet()) {
             balance.merge(entry.getKey(), entry.getValue(), Integer::sum);
         }
     }
 
-    /**
-     * Subtract denominations from a balance.
-     */
     private void subtractDenominations(Map<Integer, Integer> balance, Map<Integer, Integer> toSubtract) {
         for (Map.Entry<Integer, Integer> entry : toSubtract.entrySet()) {
             int current = balance.getOrDefault(entry.getKey(), 0);
@@ -254,9 +234,6 @@ public class BalanceQueryServiceImpl implements BalanceQueryService {
         }
     }
 
-    /**
-     * Calculate total amount from denominations.
-     */
     private BigDecimal calculateTotalFromDenominations(Map<Integer, Integer> denominations) {
         return denominations.entrySet().stream()
             .map(entry -> BigDecimal.valueOf(entry.getKey())

@@ -62,7 +62,6 @@ public class BackupServiceImpl implements BackupService {
             Path backupPath = createBackup();
             log.info("Scheduled backup completed successfully: {}", backupPath);
 
-            // Clean up old backups
             int deleted = cleanupOldBackups();
             if (deleted > 0) {
                 log.info("Cleaned up {} old backup(s)", deleted);
@@ -77,25 +76,18 @@ public class BackupServiceImpl implements BackupService {
         String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMAT);
         Path backupDir = ensureBackupDirectoryExists();
 
-        // Create backup subdirectory for this backup
         Path backupPath = backupDir.resolve("backup_" + timestamp);
         Files.createDirectories(backupPath);
 
         try {
-            // Backup transaction file
             backupFile(Paths.get(transactionFilePath), backupPath.resolve("transactions.txt"));
-
-            // Backup balance file
             backupFile(Paths.get(balanceFilePath), backupPath.resolve("balances.txt"));
-
-            // Create metadata file
             createMetadataFile(backupPath);
 
             log.info("Backup created successfully at: {}", backupPath);
             return backupPath;
 
         } catch (IOException e) {
-            // Cleanup partial backup on failure
             try {
                 if (Files.exists(backupPath)) {
                     deleteDirectory(backupPath);
@@ -119,7 +111,6 @@ public class BackupServiceImpl implements BackupService {
 
         log.warn("Starting restore from backup: {}", backupPath);
 
-        // Create backup of current data before restoring
         Path preRestoreBackup = null;
         try {
             preRestoreBackup = createBackup();
@@ -129,10 +120,7 @@ public class BackupServiceImpl implements BackupService {
         }
 
         try {
-            // Restore transaction file
             restoreFile(backupPath.resolve("transactions.txt"), Paths.get(transactionFilePath));
-
-            // Restore balance file
             restoreFile(backupPath.resolve("balances.txt"), Paths.get(balanceFilePath));
 
             log.info("Restore completed successfully from: {}", backupPath);
@@ -177,7 +165,6 @@ public class BackupServiceImpl implements BackupService {
             boolean shouldDelete = false;
             String reason = "";
 
-            // Check if backup exceeds max age
             try {
                 Instant backupTime = getBackupTimestamp(backup);
                 if (backupTime.isBefore(cutoffDate)) {
@@ -188,7 +175,6 @@ public class BackupServiceImpl implements BackupService {
                 log.warn("Error checking backup age: {}", backup.getFileName(), e);
             }
 
-            // Check if backup exceeds max count (keep newest maxBackups)
             if (i >= maxBackups) {
                 shouldDelete = true;
                 reason = "count exceeded";
@@ -216,7 +202,6 @@ public class BackupServiceImpl implements BackupService {
             return false;
         }
 
-        // Check that required files exist
         Path transactionBackup = backupPath.resolve("transactions.txt");
         Path balanceBackup = backupPath.resolve("balances.txt");
         Path metadataFile = backupPath.resolve("metadata.txt");
@@ -234,13 +219,11 @@ public class BackupServiceImpl implements BackupService {
     private void backupFile(Path source, Path destination) throws IOException {
         if (!Files.exists(source)) {
             log.warn("Source file does not exist, skipping: {}", source);
-            // Create empty file in backup
             Files.createFile(compressionEnabled ? Paths.get(destination.toString() + ".gz") : destination);
             return;
         }
 
         if (compressionEnabled) {
-            // Backup with compression
             Path compressedDest = Paths.get(destination.toString() + ".gz");
             try (InputStream in = Files.newInputStream(source);
                  OutputStream out = Files.newOutputStream(compressedDest);
@@ -254,7 +237,6 @@ public class BackupServiceImpl implements BackupService {
             }
             log.debug("Backed up file with compression: {} -> {}", source, compressedDest);
         } else {
-            // Backup without compression
             Files.copy(source, destination, StandardCopyOption.REPLACE_EXISTING);
             log.debug("Backed up file: {} -> {}", source, destination);
         }
@@ -270,11 +252,9 @@ public class BackupServiceImpl implements BackupService {
             throw new FileNotFoundException("Backup file not found: " + actualSource);
         }
 
-        // Ensure parent directory exists
         Files.createDirectories(destination.getParent());
 
         if (compressionEnabled) {
-            // Restore from compressed file
             try (InputStream in = Files.newInputStream(actualSource);
                  GZIPInputStream gzipIn = new GZIPInputStream(in);
                  OutputStream out = Files.newOutputStream(destination,
@@ -288,7 +268,6 @@ public class BackupServiceImpl implements BackupService {
             }
             log.debug("Restored file from compressed backup: {} -> {}", actualSource, destination);
         } else {
-            // Restore without decompression
             Files.copy(actualSource, destination, StandardCopyOption.REPLACE_EXISTING);
             log.debug("Restored file: {} -> {}", actualSource, destination);
         }

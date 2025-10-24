@@ -43,7 +43,6 @@ public class TransactionFileHealthIndicator implements HealthIndicator {
             File transactionFile = transactionPath.toFile();
             File dataDirFile = dataDirPath.toFile();
 
-            // Check data directory exists
             if (!dataDirFile.exists()) {
                 log.warn("Health check: Data directory does not exist: {}", dataDir);
                 return Health.down()
@@ -53,7 +52,6 @@ public class TransactionFileHealthIndicator implements HealthIndicator {
                         .build();
             }
 
-            // Check data directory is actually a directory
             if (!dataDirFile.isDirectory()) {
                 log.error("Health check: Data directory path exists but is not a directory: {}", dataDir);
                 return Health.down()
@@ -63,7 +61,6 @@ public class TransactionFileHealthIndicator implements HealthIndicator {
                         .build();
             }
 
-            // Check file accessibility
             if (!transactionFile.exists()) {
                 log.warn("Health check: Transaction file does not exist: {}", transactionFilePath);
                 return Health.down()
@@ -72,7 +69,6 @@ public class TransactionFileHealthIndicator implements HealthIndicator {
                         .build();
             }
 
-            // Check file is readable
             if (!transactionFile.canRead()) {
                 log.error("Health check: Transaction file is not readable: {}", transactionFilePath);
                 return Health.down()
@@ -81,7 +77,6 @@ public class TransactionFileHealthIndicator implements HealthIndicator {
                         .build();
             }
 
-            // Check file is writable
             if (!transactionFile.canWrite()) {
                 log.error("Health check: Transaction file is not writable: {}", transactionFilePath);
                 return Health.down()
@@ -90,7 +85,6 @@ public class TransactionFileHealthIndicator implements HealthIndicator {
                         .build();
             }
 
-            // Check file size is reasonable (potential corruption detection)
             long fileSizeMB = transactionFile.length() / (1024 * 1024);
             if (fileSizeMB > MAX_REASONABLE_FILE_SIZE_MB) {
                 log.warn("Health check: Transaction file size is unusually large: {} MB", fileSizeMB);
@@ -101,10 +95,8 @@ public class TransactionFileHealthIndicator implements HealthIndicator {
                         .build();
             }
 
-            // Count transactions and check basic integrity
             int transactionCount = countTransactions(transactionFile);
 
-            // All checks passed
             log.debug("Health check: Transaction file is healthy with {} transactions", transactionCount);
             return Health.up()
                     .withDetail("transactionFile", transactionFilePath)
@@ -136,7 +128,6 @@ public class TransactionFileHealthIndicator implements HealthIndicator {
                 if (!line.trim().isEmpty() && !line.startsWith("#")) {
                     count++;
                 }
-                // Limit the check to avoid spending too much time on large files
                 if (count >= MAX_TRANSACTION_COUNT_FOR_QUICK_CHECK) {
                     log.debug("Transaction count exceeded quick check limit, stopping count at {}", count);
                     break;

@@ -46,7 +46,6 @@ public class CashOperationServiceImpl implements CashOperationService {
 
     @Override
     public CashOperationResponse processOperation(CashOperationRequest request) {
-        // Validate and parse request
         String cashierName = request.getCashier().toUpperCase();
         if (!Cashier.isValid(cashierName)) {
             throw new InvalidCashierException("Invalid cashier: " + cashierName);
@@ -55,19 +54,16 @@ public class CashOperationServiceImpl implements CashOperationService {
         OperationType operationType = OperationType.fromString(request.getOperationType());
         Currency currency = Currency.valueOf(request.getCurrency().toUpperCase());
 
-        // Set MDC context for structured logging
         MdcUtil.setCashier(cashierName);
         MdcUtil.setOperationType(operationType.name());
         MdcUtil.setCurrency(currency.name());
         MdcUtil.setAmount(request.getAmount().toPlainString());
 
-        // Get appropriate handler
         CashOperationHandler handler = handlers.get(operationType);
         if (handler == null) {
             throw new IllegalStateException("No handler found for operation type: " + operationType);
         }
 
-        // Get current balance for cashier and currency
         Map<Currency, CashBalance> cashierBalances = balanceRepository.findByCashier(cashierName);
         CashBalance balance = cashierBalances.get(currency);
 
@@ -76,14 +72,11 @@ public class CashOperationServiceImpl implements CashOperationService {
             cashierBalances.put(currency, balance);
         }
 
-        // Store original state for rollback
         Map<Integer, Integer> originalDenominations = balance.getDenominations();
 
         try {
-            // Handle the operation (deposit or withdrawal)
             handler.handle(balance, currency, request.getAmount(), request.getDenominations());
 
-            // Create transaction record
             Transaction transaction = Transaction.create(
                 cashierName,
                 operationType,
@@ -92,16 +85,11 @@ public class CashOperationServiceImpl implements CashOperationService {
                 request.getDenominations()
             );
 
-            // Set transaction ID in MDC for structured logging
             MdcUtil.setTransactionId(transaction.getId());
 
-            // Save updated balance
             balanceRepository.save(cashierName, cashierBalances);
-
-            // Save transaction
             transactionRepository.save(transaction);
 
-            // Log success with transaction ID in MDC
             log.info("Cash operation completed successfully: {} {} {} with denominations {}",
                 operationType == OperationType.DEPOSIT ? "deposited" : "withdrew",
                 request.getAmount(),
@@ -109,7 +97,6 @@ public class CashOperationServiceImpl implements CashOperationService {
                 formatDenominations(request.getDenominations())
             );
 
-            // Build and return response
             return new CashOperationResponse(
                 transaction.getId().toString(),
                 transaction.getTimestamp(),
@@ -122,10 +109,8 @@ public class CashOperationServiceImpl implements CashOperationService {
             );
 
         } catch (Exception e) {
-            // Rollback balance on error
             log.error("Operation failed, rolling back balance", e);
 
-            // Restore original denominations
             for (Map.Entry<Integer, Integer> entry : originalDenominations.entrySet()) {
                 balance.setDenominationCount(entry.getKey(), entry.getValue());
             }

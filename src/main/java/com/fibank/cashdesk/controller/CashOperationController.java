@@ -53,7 +53,6 @@ public class CashOperationController {
         @Valid @RequestBody CashOperationRequest request,
         @RequestHeader(value = "Idempotency-Key", required = true) String idempotencyKey
     ) {
-        // Validate idempotency key
         validateIdempotencyKey(idempotencyKey);
 
         log.info("Received {} request for cashier {}: {} {} (Idempotency-Key: {})",
@@ -64,7 +63,6 @@ public class CashOperationController {
             idempotencyKey
         );
 
-        // Check for cached response
         Optional<CashOperationResponse> cachedResponse = idempotencyService.getCachedResponse(idempotencyKey);
 
         if (cachedResponse.isPresent()) {
@@ -73,10 +71,7 @@ public class CashOperationController {
             return ResponseEntity.status(HttpStatus.OK).body(cachedResponse.get());
         }
 
-        // Process the operation
         CashOperationResponse response = cashOperationService.processOperation(request);
-
-        // Cache the response
         idempotencyService.cacheResponse(idempotencyKey, response);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -94,7 +89,6 @@ public class CashOperationController {
                 "Idempotency-Key header is required for all cash operations");
         }
 
-        // Validate UUID format
         String uuidPattern = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$";
         if (!idempotencyKey.matches(uuidPattern)) {
             throw new com.fibank.cashdesk.exception.InvalidIdempotencyKeyException(
