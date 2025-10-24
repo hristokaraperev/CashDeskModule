@@ -16,6 +16,7 @@ A Spring Boot application for managing cash operations (deposits, withdrawals, a
 - **Backup & Recovery**: Automated backups with manual backup/restore API
 - **Idempotency Support**: Prevent duplicate transactions
 - **Authentication**: API key-based security
+- **Health Checks & Monitoring**: Spring Actuator with custom file system health indicators
 
 ---
 
@@ -84,6 +85,10 @@ Returns balances with optional filters: `?cashier=MARTINA&dateFrom=2024-10-20T00
 - `POST /backup/restore/{backupName}` - Restore from backup
 - `GET /backup/verify/{backupName}` - Verify backup integrity
 
+**4. Health & Monitoring** - `/actuator`
+- `GET /actuator/health` - Overall application health status
+- `GET /actuator/info` - Application information
+- `GET /actuator/metrics` - Application metrics
 
 ---
 
@@ -148,6 +153,18 @@ Each cashier starts with:
 - Java 17, Spring Boot 3.5.6, Maven
 - SLF4J logging, Jakarta Validation
 - File-based persistence (no database)
+
+**Health Checks & Monitoring:**
+- Spring Boot Actuator for operational monitoring
+- Custom health indicators for file system checks:
+  - **Balance File Health**: Monitors balance file accessibility, disk space, and file integrity
+  - **Transaction File Health**: Monitors transaction file accessibility, transaction count, and file size
+  - **Disk Space Health**: Built-in check for available disk space (10MB minimum threshold)
+- Health endpoint returns detailed status including:
+  - File readability and writability
+  - Available disk space
+  - File sizes and transaction counts
+  - Warnings for unusually large files
 
 ---
 
