@@ -3,7 +3,6 @@ package com.fibank.cashdesk.integration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fibank.cashdesk.dto.request.CashOperationRequest;
 import com.fibank.cashdesk.dto.response.BalanceQueryResponse;
-import com.fibank.cashdesk.dto.response.CashOperationResponse;
 import com.fibank.cashdesk.util.TestDataCleanup;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

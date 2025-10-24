@@ -12,6 +12,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.util.List;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -40,10 +41,10 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleUnauthorizedException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getStatus()).isEqualTo(401);
-        assertThat(response.getBody().getError()).isEqualTo("Unauthorized");
-        assertThat(response.getBody().getMessage()).isEqualTo("Invalid API key");
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+        assertThat(body.getStatus()).isEqualTo(401);
+        assertThat(body.getError()).isEqualTo("Unauthorized");
+        assertThat(body.getMessage()).isEqualTo("Invalid API key");
     }
 
     @Test
@@ -54,7 +55,8 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleUnauthorizedException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-        assertThat(response.getBody().getMessage()).contains("FIB-X-AUTH");
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+        assertThat(body.getMessage()).contains("FIB-X-AUTH");
     }
 
     // ===================== InvalidCashierException Tests =====================
@@ -67,10 +69,10 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleInvalidCashierException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getStatus()).isEqualTo(404);
-        assertThat(response.getBody().getError()).isEqualTo("Not Found");
-        assertThat(response.getBody().getMessage()).isEqualTo("Cashier JOHN not found");
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+        assertThat(body.getStatus()).isEqualTo(404);
+        assertThat(body.getError()).isEqualTo("Not Found");
+        assertThat(body.getMessage()).isEqualTo("Cashier JOHN not found");
     }
 
     @Test
@@ -81,7 +83,8 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleInvalidCashierException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertThat(response.getBody().getMessage()).contains("UNKNOWN");
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+        assertThat(body.getMessage()).contains("UNKNOWN");
     }
 
     // ===================== InvalidDenominationException Tests =====================
@@ -96,10 +99,10 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleInvalidDenominationException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getStatus()).isEqualTo(400);
-        assertThat(response.getBody().getError()).isEqualTo("Bad Request");
-        assertThat(response.getBody().getMessage()).contains("Invalid denomination");
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+        assertThat(body.getStatus()).isEqualTo(400);
+        assertThat(body.getError()).isEqualTo("Bad Request");
+        assertThat(body.getMessage()).contains("Invalid denomination");
     }
 
     @Test
@@ -112,7 +115,8 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleInvalidDenominationException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody().getMessage()).contains("does not match amount");
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+        assertThat(body.getMessage()).contains("does not match amount");
     }
 
     // ===================== InsufficientFundsException Tests =====================
@@ -127,10 +131,10 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleInsufficientFundsException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getStatus()).isEqualTo(400);
-        assertThat(response.getBody().getError()).isEqualTo("Bad Request");
-        assertThat(response.getBody().getMessage()).contains("Insufficient funds");
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+        assertThat(body.getStatus()).isEqualTo(400);
+        assertThat(body.getError()).isEqualTo("Bad Request");
+        assertThat(body.getMessage()).contains("Insufficient funds");
     }
 
     @Test
@@ -143,8 +147,9 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleInsufficientFundsException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody().getMessage()).contains("50 BGN notes");
-        assertThat(response.getBody().getMessage()).contains("Available: 5");
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+        assertThat(body.getMessage()).contains("50 BGN notes");
+        assertThat(body.getMessage()).contains("Available: 5");
     }
 
     // ===================== InvalidDateRangeException Tests =====================
@@ -159,10 +164,10 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleInvalidDateRangeException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getStatus()).isEqualTo(400);
-        assertThat(response.getBody().getError()).isEqualTo("Bad Request");
-        assertThat(response.getBody().getMessage()).contains("dateFrom");
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+        assertThat(body.getStatus()).isEqualTo(400);
+        assertThat(body.getError()).isEqualTo("Bad Request");
+        assertThat(body.getMessage()).contains("dateFrom");
     }
 
     @Test
@@ -175,7 +180,8 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleInvalidDateRangeException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody().getMessage()).isEqualTo("Invalid date format");
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+        assertThat(body.getMessage()).isEqualTo("Invalid date format");
     }
 
     // ===================== FileStorageException Tests =====================
@@ -190,10 +196,10 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleFileStorageException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getStatus()).isEqualTo(500);
-        assertThat(response.getBody().getError()).isEqualTo("Internal Server Error");
-        assertThat(response.getBody().getMessage()).isEqualTo("An error occurred while processing your request");
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+        assertThat(body.getStatus()).isEqualTo(500);
+        assertThat(body.getError()).isEqualTo("Internal Server Error");
+        assertThat(body.getMessage()).isEqualTo("An error occurred while processing your request");
     }
 
     @Test
@@ -207,10 +213,10 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleFileStorageException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getStatus()).isEqualTo(500);
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+        assertThat(body.getStatus()).isEqualTo(500);
         // Should not expose internal error details to client
-        assertThat(response.getBody().getMessage()).isEqualTo("An error occurred while processing your request");
+        assertThat(body.getMessage()).isEqualTo("An error occurred while processing your request");
     }
 
     @Test
@@ -223,7 +229,8 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleFileStorageException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getBody().getMessage()).isEqualTo("An error occurred while processing your request");
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+        assertThat(body.getMessage()).isEqualTo("An error occurred while processing your request");
     }
 
     @Test
@@ -236,7 +243,8 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleFileStorageException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getBody().getError()).isEqualTo("Internal Server Error");
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+        assertThat(body.getError()).isEqualTo("Internal Server Error");
     }
 
     // ===================== DataCorruptionException Tests =====================
@@ -251,10 +259,10 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleDataCorruptionException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getStatus()).isEqualTo(500);
-        assertThat(response.getBody().getError()).isEqualTo("Internal Server Error");
-        assertThat(response.getBody().getMessage()).isEqualTo("Data corruption detected");
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+        assertThat(body.getStatus()).isEqualTo(500);
+        assertThat(body.getError()).isEqualTo("Internal Server Error");
+        assertThat(body.getMessage()).isEqualTo("Data corruption detected");
     }
 
     @Test
@@ -268,10 +276,10 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleDataCorruptionException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getStatus()).isEqualTo(500);
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+        assertThat(body.getStatus()).isEqualTo(500);
         // Should not expose internal corruption details to client
-        assertThat(response.getBody().getMessage()).isEqualTo("Data corruption detected");
+        assertThat(body.getMessage()).isEqualTo("Data corruption detected");
     }
 
     @Test
@@ -284,7 +292,8 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleDataCorruptionException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getBody().getMessage()).isEqualTo("Data corruption detected");
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+        assertThat(body.getMessage()).isEqualTo("Data corruption detected");
     }
 
     @Test
@@ -297,7 +306,8 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleDataCorruptionException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getBody().getError()).isEqualTo("Internal Server Error");
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+        assertThat(body.getError()).isEqualTo("Internal Server Error");
     }
 
     // ===================== MethodArgumentNotValidException Tests =====================
@@ -321,12 +331,12 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleValidationException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getStatus()).isEqualTo(400);
-        assertThat(response.getBody().getError()).isEqualTo("Bad Request");
-        assertThat(response.getBody().getMessage()).isEqualTo("Validation failed");
-        assertThat(response.getBody().getDetails()).isNotNull();
-        assertThat(response.getBody().getDetails()).containsKey("validationErrors");
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+        assertThat(body.getStatus()).isEqualTo(400);
+        assertThat(body.getError()).isEqualTo("Bad Request");
+        assertThat(body.getMessage()).isEqualTo("Validation failed");
+        assertThat(body.getDetails()).isNotNull();
+        assertThat(body.getDetails()).containsKey("validationErrors");
     }
 
     @Test
@@ -348,7 +358,8 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleValidationException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        String validationErrors = (String) response.getBody().getDetails().get("validationErrors");
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+        String validationErrors = (String) body.getDetails().get("validationErrors");
         assertThat(validationErrors).contains("cashier");
         assertThat(validationErrors).contains("amount");
         assertThat(validationErrors).contains("currency");
@@ -364,10 +375,10 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleGeneralException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getStatus()).isEqualTo(500);
-        assertThat(response.getBody().getError()).isEqualTo("Internal Server Error");
-        assertThat(response.getBody().getMessage()).isEqualTo("An unexpected error occurred");
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+        assertThat(body.getStatus()).isEqualTo(500);
+        assertThat(body.getError()).isEqualTo("Internal Server Error");
+        assertThat(body.getMessage()).isEqualTo("An unexpected error occurred");
     }
 
     @Test
@@ -378,8 +389,9 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleGeneralException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
         // Should not expose internal error details
-        assertThat(response.getBody().getMessage()).isEqualTo("An unexpected error occurred");
+        assertThat(body.getMessage()).isEqualTo("An unexpected error occurred");
     }
 
     @Test
@@ -390,7 +402,8 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleGeneralException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getBody().getError()).isEqualTo("Internal Server Error");
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+        assertThat(body.getError()).isEqualTo("Internal Server Error");
     }
 
     // ===================== Edge Cases =====================
@@ -414,8 +427,8 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleInvalidCashierException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getMessage()).isEmpty();
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+        assertThat(body.getMessage()).isEmpty();
     }
 
     @Test
@@ -427,8 +440,8 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = exceptionHandler.handleFileStorageException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getBody()).isNotNull();
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
         // Generic message used, not the long internal message
-        assertThat(response.getBody().getMessage()).isEqualTo("An error occurred while processing your request");
+        assertThat(body.getMessage()).isEqualTo("An error occurred while processing your request");
     }
 }

@@ -1,6 +1,5 @@
 package com.fibank.cashdesk.service;
 
-import com.fibank.cashdesk.exception.FileStorageException;
 import com.fibank.cashdesk.service.impl.BackupServiceImpl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -167,7 +166,7 @@ class BackupServiceImplTest {
         // Given
         backupService.createBackup();
         Thread.sleep(100);
-        Path secondBackup = backupService.createBackup();
+        backupService.createBackup();
         Thread.sleep(100);
         backupService.createBackup();
 

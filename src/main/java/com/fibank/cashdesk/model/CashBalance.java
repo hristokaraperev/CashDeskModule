@@ -4,7 +4,10 @@ import com.fibank.cashdesk.exception.InsufficientFundsException;
 import com.fibank.cashdesk.exception.InvalidDenominationException;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Entity representing cash balance with denominations for a specific currency.
