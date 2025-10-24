@@ -23,6 +23,11 @@ cashdesk:
     api-key: f9Uie8nNf112hx8s
     header-name: FIB-X-AUTH
 
+  idempotency:
+    # Time-to-live for cached idempotency responses (in hours)
+    # After this time, the same idempotency key can be reused
+    ttl-hours: ${CASHDESK_IDEMPOTENCY_TTL_HOURS:24}
+
   storage:
     # Data directory - stored outside JAR for persistence across deployments
     # Uses ${user.home}/.cashdesk by default, can be overridden with environment variable

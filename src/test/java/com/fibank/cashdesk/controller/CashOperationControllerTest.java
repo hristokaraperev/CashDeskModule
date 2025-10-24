@@ -6,6 +6,7 @@ import com.fibank.cashdesk.dto.response.CashOperationResponse;
 import com.fibank.cashdesk.exception.InsufficientFundsException;
 import com.fibank.cashdesk.exception.InvalidDenominationException;
 import com.fibank.cashdesk.service.CashOperationService;
+import com.fibank.cashdesk.service.IdempotencyService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,6 +46,9 @@ class CashOperationControllerTest {
 
     @MockitoBean
     private CashOperationService cashOperationService;
+
+    @MockitoBean
+    private IdempotencyService idempotencyService;
 
     private CashOperationRequest validDepositRequest;
     private CashOperationRequest validWithdrawalRequest;

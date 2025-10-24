@@ -214,6 +214,193 @@
       ]
     },
     {
+      "name": "Idempotency Tests",
+      "item": [
+        {
+          "name": "Deposit with Idempotency Key - First Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "FIB-X-AUTH",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "test-idempotency-12345",
+                "description": "Unique idempotency key to prevent duplicate processing"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operationType\": \"DEPOSIT\",\n  \"cashier\": \"PETER\",\n  \"currency\": \"BGN\",\n  \"amount\": 300.00,\n  \"denominations\": {\n    \"10\": 10,\n    \"50\": 4\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cash-operation",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cash-operation"]
+            },
+            "description": "First request with idempotency key. This will process normally and cache the response."
+          }
+        },
+        {
+          "name": "Deposit with Idempotency Key - Duplicate Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "FIB-X-AUTH",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "test-idempotency-12345",
+                "description": "Same idempotency key as previous request"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operationType\": \"DEPOSIT\",\n  \"cashier\": \"PETER\",\n  \"currency\": \"BGN\",\n  \"amount\": 300.00,\n  \"denominations\": {\n    \"10\": 10,\n    \"50\": 4\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cash-operation",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cash-operation"]
+            },
+            "description": "Duplicate request with same idempotency key. This will return the cached response without processing again. The transaction ID should match the first request."
+          }
+        },
+        {
+          "name": "Withdrawal with Different Idempotency Key",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "FIB-X-AUTH",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "test-idempotency-67890",
+                "description": "Different idempotency key - will process as new transaction"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operationType\": \"WITHDRAWAL\",\n  \"cashier\": \"LINDA\",\n  \"currency\": \"EUR\",\n  \"amount\": 100.00,\n  \"denominations\": {\n    \"50\": 2\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cash-operation",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cash-operation"]
+            },
+            "description": "Request with a different idempotency key. This will process as a new transaction."
+          }
+        },
+        {
+          "name": "Deposit without Idempotency Key",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "FIB-X-AUTH",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operationType\": \"DEPOSIT\",\n  \"cashier\": \"MARTINA\",\n  \"currency\": \"EUR\",\n  \"amount\": 150.00,\n  \"denominations\": {\n    \"10\": 5,\n    \"50\": 2\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cash-operation",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cash-operation"]
+            },
+            "description": "Request without idempotency key. This works normally - idempotency is optional."
+          }
+        },
+        {
+          "name": "Network Retry Simulation - Request 1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "FIB-X-AUTH",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "retry-scenario-abc123",
+                "description": "Idempotency key for retry scenario"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operationType\": \"DEPOSIT\",\n  \"cashier\": \"LINDA\",\n  \"currency\": \"BGN\",\n  \"amount\": 400.00,\n  \"denominations\": {\n    \"10\": 20,\n    \"50\": 4\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cash-operation",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cash-operation"]
+            },
+            "description": "Simulates first attempt of a deposit. Save the transaction ID from this response."
+          }
+        },
+        {
+          "name": "Network Retry Simulation - Request 2 (Retry)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "FIB-X-AUTH",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "retry-scenario-abc123",
+                "description": "SAME idempotency key as previous request"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operationType\": \"DEPOSIT\",\n  \"cashier\": \"LINDA\",\n  \"currency\": \"BGN\",\n  \"amount\": 400.00,\n  \"denominations\": {\n    \"10\": 20,\n    \"50\": 4\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cash-operation",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cash-operation"]
+            },
+            "description": "Simulates network retry with same idempotency key. The transaction ID should match Request 1, and no duplicate deposit is created."
+          }
+        }
+      ],
+      "description": "Test cases demonstrating idempotency support to prevent duplicate transactions. Use the Idempotency-Key header to ensure duplicate requests don't create multiple transactions."
+    },
+    {
       "name": "Error Cases",
       "item": [
         {
