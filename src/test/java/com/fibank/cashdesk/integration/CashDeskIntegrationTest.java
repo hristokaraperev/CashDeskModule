@@ -4,12 +4,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fibank.cashdesk.dto.request.CashOperationRequest;
 import com.fibank.cashdesk.dto.response.BalanceQueryResponse;
 import com.fibank.cashdesk.dto.response.CashOperationResponse;
+import com.fibank.cashdesk.util.TestDataCleanup;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -31,6 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @DisplayName("Cash Desk Integration Tests")
 @org.springframework.test.context.ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class CashDeskIntegrationTest {
 
     private static final String API_KEY = "f9Uie8nNf112hx8s";
@@ -41,6 +46,21 @@ class CashDeskIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private TestDataCleanup testDataCleanup;
+
+    @BeforeEach
+    void setUp() {
+        // Clean up test data before each test to ensure isolation
+        testDataCleanup.cleanupTestData();
+    }
+
+    @AfterEach
+    void tearDown() {
+        // Clean up test data after each test to prevent interference
+        testDataCleanup.cleanupTestData();
+    }
 
     /**
      * Test deposit and withdrawal operations.

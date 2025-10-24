@@ -2,6 +2,8 @@ package com.fibank.cashdesk.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fibank.cashdesk.dto.request.CashOperationRequest;
+import com.fibank.cashdesk.util.TestDataCleanup;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,7 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -29,9 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@TestPropertySource(properties = {
-        "cashdesk.idempotency.ttl-hours=1"
-})
+@org.springframework.test.context.ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class CashOperationControllerIdempotencyTest {
 
     @Autowired
@@ -46,10 +47,21 @@ class CashOperationControllerIdempotencyTest {
     @Value("${cashdesk.security.header-name}")
     private String authHeaderName;
 
+    @Autowired
+    private TestDataCleanup testDataCleanup;
+
     @BeforeEach
     void setUp() {
+        // Clean up test data before each test to ensure isolation
+        testDataCleanup.cleanupTestData();
         // Note: We're not clearing the idempotency cache between tests
         // because each test uses a unique idempotency key
+    }
+
+    @AfterEach
+    void tearDown() {
+        // Clean up test data after each test to prevent interference
+        testDataCleanup.cleanupTestData();
     }
 
     @Test

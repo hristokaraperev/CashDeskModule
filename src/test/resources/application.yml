@@ -1,0 +1,60 @@
+spring:
+  application:
+    name: cash-desk-module-test
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      indent-output: true
+    default-property-inclusion: non_null
+
+server:
+  port: 0  # Random port for tests to avoid conflicts
+
+cashdesk:
+  security:
+    api-key: f9Uie8nNf112hx8s
+    header-name: FIB-X-AUTH
+
+  idempotency:
+    ttl-hours: 1
+
+  storage:
+    # CRITICAL: Use separate test data directory to avoid interfering with production data
+    # This directory will be created in the system temp directory and cleaned up after tests
+    data-dir: ${java.io.tmpdir}/cashdesk-test-data
+    transaction-file: ${cashdesk.storage.data-dir}/transactions-test.txt
+    balance-file: ${cashdesk.storage.data-dir}/balances-test.txt
+
+  backup:
+    # Disable backups during tests
+    enabled: false
+    directory: ${java.io.tmpdir}/cashdesk-test-backups
+    schedule: "0 0 0 1 1 ? 2099"  # Never run (year 2099)
+    retention:
+      max-backups: 5
+      max-age-days: 1
+    compression: false
+
+  cashiers:
+    initial-balances:
+      bgn:
+        amount: 1000.00
+        denominations:
+          10: 50
+          50: 10
+      eur:
+        amount: 2000.00
+        denominations:
+          10: 100
+          20: 0
+          50: 20
+    names: MARTINA,PETER,LINDA
+
+logging:
+  level:
+    com.fibank.cashdesk: DEBUG
+    org.springframework: WARN
+    org.springframework.web: WARN
+  pattern:
+    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n'
