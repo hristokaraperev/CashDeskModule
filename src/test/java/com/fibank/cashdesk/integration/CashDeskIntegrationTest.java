@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -40,6 +41,7 @@ class CashDeskIntegrationTest {
 
     private static final String API_KEY = "f9Uie8nNf112hx8s";
     private static final String HEADER_NAME = "FIB-X-AUTH";
+    private static final String IDEMPOTENCY_HEADER = "Idempotency-Key";
 
     @Autowired
     private MockMvc mockMvc;
@@ -81,6 +83,7 @@ class CashDeskIntegrationTest {
 
         mockMvc.perform(post("/api/v1/cash-operation")
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(deposit1)))
             .andExpect(status().isOk())
@@ -97,6 +100,7 @@ class CashDeskIntegrationTest {
 
         mockMvc.perform(post("/api/v1/cash-operation")
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(deposit2)))
             .andExpect(status().isOk())
@@ -113,6 +117,7 @@ class CashDeskIntegrationTest {
 
         mockMvc.perform(post("/api/v1/cash-operation")
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(withdrawal)))
             .andExpect(status().isOk())
@@ -141,6 +146,7 @@ class CashDeskIntegrationTest {
         );
 
         mockMvc.perform(post("/api/v1/cash-operation")
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isUnauthorized());
@@ -158,6 +164,7 @@ class CashDeskIntegrationTest {
 
         mockMvc.perform(post("/api/v1/cash-operation")
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request1)))
             .andExpect(status().isOk());
@@ -171,6 +178,7 @@ class CashDeskIntegrationTest {
 
         mockMvc.perform(post("/api/v1/cash-operation")
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request2)))
             .andExpect(status().isOk());
@@ -200,6 +208,7 @@ class CashDeskIntegrationTest {
         );
         mockMvc.perform(post("/api/v1/cash-operation")
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req1)))
             .andExpect(status().isOk());
@@ -212,6 +221,7 @@ class CashDeskIntegrationTest {
         );
         mockMvc.perform(post("/api/v1/cash-operation")
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req2)))
             .andExpect(status().isOk());
@@ -224,6 +234,7 @@ class CashDeskIntegrationTest {
         );
         mockMvc.perform(post("/api/v1/cash-operation")
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req3)))
             .andExpect(status().isOk());

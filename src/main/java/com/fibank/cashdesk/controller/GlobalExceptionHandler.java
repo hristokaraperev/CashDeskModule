@@ -77,6 +77,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
+    @ExceptionHandler(InvalidIdempotencyKeyException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidIdempotencyKeyException(InvalidIdempotencyKeyException ex) {
+        log.warn("Invalid idempotency key: {}", ex.getMessage());
+        ErrorResponse error = new ErrorResponse(
+            HttpStatus.BAD_REQUEST.value(),
+            "Bad Request",
+            ex.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
     @ExceptionHandler(FileStorageException.class)
     public ResponseEntity<ErrorResponse> handleFileStorageException(FileStorageException ex) {
         log.error("File storage error: {}", ex.getMessage(), ex);

@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -36,6 +37,7 @@ class CashOperationControllerTest {
 
     private static final String API_KEY = "f9Uie8nNf112hx8s";
     private static final String HEADER_NAME = "FIB-X-AUTH";
+    private static final String IDEMPOTENCY_HEADER = "Idempotency-Key";
     private static final String ENDPOINT = "/api/v1/cash-operation";
 
     @Autowired
@@ -102,6 +104,7 @@ class CashOperationControllerTest {
     @DisplayName("Should return 401 when authentication header is missing")
     void shouldReturn401WhenAuthHeaderMissing() throws Exception {
         mockMvc.perform(post(ENDPOINT)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(validDepositRequest)))
             .andExpect(status().isUnauthorized());
@@ -112,6 +115,7 @@ class CashOperationControllerTest {
     void shouldReturn401WhenAuthHeaderInvalid() throws Exception {
         mockMvc.perform(post(ENDPOINT)
                 .header(HEADER_NAME, "invalid-api-key")
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(validDepositRequest)))
             .andExpect(status().isUnauthorized());
@@ -124,6 +128,7 @@ class CashOperationControllerTest {
 
         mockMvc.perform(post(ENDPOINT)
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(validDepositRequest)))
             .andExpect(status().isOk());
@@ -138,6 +143,7 @@ class CashOperationControllerTest {
 
         mockMvc.perform(post(ENDPOINT)
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(validDepositRequest)))
             .andExpect(status().isOk())
@@ -168,6 +174,7 @@ class CashOperationControllerTest {
 
         mockMvc.perform(post(ENDPOINT)
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(validWithdrawalRequest)))
             .andExpect(status().isOk())
@@ -187,6 +194,7 @@ class CashOperationControllerTest {
 
         mockMvc.perform(post(ENDPOINT)
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest());
@@ -201,6 +209,7 @@ class CashOperationControllerTest {
 
         mockMvc.perform(post(ENDPOINT)
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest());
@@ -215,6 +224,7 @@ class CashOperationControllerTest {
 
         mockMvc.perform(post(ENDPOINT)
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest());
@@ -229,6 +239,7 @@ class CashOperationControllerTest {
 
         mockMvc.perform(post(ENDPOINT)
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest());
@@ -243,6 +254,7 @@ class CashOperationControllerTest {
 
         mockMvc.perform(post(ENDPOINT)
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest());
@@ -259,6 +271,7 @@ class CashOperationControllerTest {
 
         mockMvc.perform(post(ENDPOINT)
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest());
@@ -275,6 +288,7 @@ class CashOperationControllerTest {
 
         mockMvc.perform(post(ENDPOINT)
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest());
@@ -291,6 +305,7 @@ class CashOperationControllerTest {
 
         mockMvc.perform(post(ENDPOINT)
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest());
@@ -307,6 +322,7 @@ class CashOperationControllerTest {
 
         mockMvc.perform(post(ENDPOINT)
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest());
@@ -321,6 +337,7 @@ class CashOperationControllerTest {
 
         mockMvc.perform(post(ENDPOINT)
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest());
@@ -336,6 +353,7 @@ class CashOperationControllerTest {
 
         mockMvc.perform(post(ENDPOINT)
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(validWithdrawalRequest)))
             .andExpect(status().isBadRequest())
@@ -350,6 +368,7 @@ class CashOperationControllerTest {
 
         mockMvc.perform(post(ENDPOINT)
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(validDepositRequest)))
             .andExpect(status().isBadRequest())
@@ -386,6 +405,7 @@ class CashOperationControllerTest {
 
         mockMvc.perform(post(ENDPOINT)
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(eurRequest)))
             .andExpect(status().isOk())
@@ -420,10 +440,61 @@ class CashOperationControllerTest {
 
         mockMvc.perform(post(ENDPOINT)
                 .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(eurRequest)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.operationType").value("WITHDRAWAL"))
             .andExpect(jsonPath("$.currency").value("EUR"));
+    }
+
+    // ===================== Idempotency Key Validation Tests =====================
+
+    @Test
+    @DisplayName("Should return 400 when idempotency key is missing")
+    void shouldReturn400WhenIdempotencyKeyMissing() throws Exception {
+        mockMvc.perform(post(ENDPOINT)
+                .header(HEADER_NAME, API_KEY)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(validDepositRequest)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.error").value("Bad Request"));
+    }
+
+    @Test
+    @DisplayName("Should return 400 when idempotency key is blank")
+    void shouldReturn400WhenIdempotencyKeyBlank() throws Exception {
+        mockMvc.perform(post(ENDPOINT)
+                .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, "   ")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(validDepositRequest)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("Idempotency-Key header is required for all cash operations"));
+    }
+
+    @Test
+    @DisplayName("Should return 400 when idempotency key is not valid UUID")
+    void shouldReturn400WhenIdempotencyKeyInvalidFormat() throws Exception {
+        mockMvc.perform(post(ENDPOINT)
+                .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, "not-a-valid-uuid")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(validDepositRequest)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("Idempotency-Key must be a valid UUID format (e.g., 550e8400-e29b-41d4-a716-446655440000)"));
+    }
+
+    @Test
+    @DisplayName("Should accept valid UUID format for idempotency key")
+    void shouldAcceptValidUuidFormat() throws Exception {
+        when(cashOperationService.processOperation(any())).thenReturn(mockResponse);
+
+        mockMvc.perform(post(ENDPOINT)
+                .header(HEADER_NAME, API_KEY)
+                .header(IDEMPOTENCY_HEADER, "550e8400-e29b-41d4-a716-446655440000")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(validDepositRequest)))
+            .andExpect(status().isOk());
     }
 }

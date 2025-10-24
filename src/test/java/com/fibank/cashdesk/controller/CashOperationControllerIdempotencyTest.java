@@ -65,8 +65,8 @@ class CashOperationControllerIdempotencyTest {
     }
 
     @Test
-    @DisplayName("Should process request without idempotency key normally")
-    void processOperation_WithoutIdempotencyKey_Success() throws Exception {
+    @DisplayName("Should return 400 when idempotency key is missing")
+    void processOperation_WithoutIdempotencyKey_Returns400() throws Exception {
         // Arrange
         CashOperationRequest request = createDepositRequest();
 
@@ -75,11 +75,8 @@ class CashOperationControllerIdempotencyTest {
                         .header(authHeaderName, apiKey)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.transactionId").exists())
-                .andExpect(jsonPath("$.cashier").value("MARTINA"))
-                .andExpect(jsonPath("$.operationType").value("DEPOSIT"))
-                .andExpect(jsonPath("$.amount").value(600.00));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Bad Request"));
     }
 
     @Test
