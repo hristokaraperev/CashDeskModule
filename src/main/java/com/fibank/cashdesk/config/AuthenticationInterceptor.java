@@ -31,19 +31,51 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         String apiKey = request.getHeader(headerName);
+        String clientIp = getClientIpAddress(request);
 
         if (apiKey == null || apiKey.isBlank()) {
-            log.warn("Unauthorized request: missing {} header from IP {}", headerName, request.getRemoteAddr());
+            log.warn("Unauthorized request: missing {} header from IP {}", headerName, clientIp);
             throw new UnauthorizedException("Missing authentication header: " + headerName);
         }
 
         String incomingKeyHash = hashApiKey(apiKey);
         if (!validApiKeyHash.equals(incomingKeyHash)) {
-            log.warn("Unauthorized request: invalid API key from IP {}", request.getRemoteAddr());
+            log.warn("Unauthorized request: invalid API key from IP {}", clientIp);
             throw new UnauthorizedException("Invalid API key");
         }
 
         return true;
+    }
+
+    /**
+     * Gets the client IP address in IPv4 format when possible.
+     * Handles X-Forwarded-For header for proxied requests and converts IPv6 localhost to IPv4.
+     *
+     * @param request the HTTP request
+     * @return the client IP address, preferring IPv4 format
+     */
+    private String getClientIpAddress(HttpServletRequest request) {
+        // Check for X-Forwarded-For header (for requests behind proxy/load balancer)
+        String ipAddress = request.getHeader("X-Forwarded-For");
+        if (ipAddress != null && !ipAddress.isBlank()) {
+            // X-Forwarded-For can contain multiple IPs (client, proxy1, proxy2, ...)
+            // The first one is the original client IP
+            ipAddress = ipAddress.split(",")[0].trim();
+        } else {
+            ipAddress = request.getRemoteAddr();
+        }
+
+        // Convert IPv6 localhost to IPv4 localhost
+        if ("0:0:0:0:0:0:0:1".equals(ipAddress) || "::1".equals(ipAddress)) {
+            return "127.0.0.1";
+        }
+
+        // For IPv6 addresses that are IPv4-mapped (::ffff:192.168.1.1), extract the IPv4 part
+        if (ipAddress != null && ipAddress.startsWith("::ffff:")) {
+            return ipAddress.substring(7);
+        }
+
+        return ipAddress;
     }
 
     /**
