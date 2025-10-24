@@ -8,6 +8,7 @@ import com.fibank.cashdesk.repository.BalanceRepository;
 import com.fibank.cashdesk.repository.TransactionRepository;
 import com.fibank.cashdesk.service.CashOperationService;
 import com.fibank.cashdesk.service.handler.CashOperationHandler;
+import com.fibank.cashdesk.util.MdcUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -54,6 +55,12 @@ public class CashOperationServiceImpl implements CashOperationService {
         OperationType operationType = OperationType.fromString(request.getOperationType());
         Currency currency = Currency.valueOf(request.getCurrency().toUpperCase());
 
+        // Set MDC context for structured logging
+        MdcUtil.setCashier(cashierName);
+        MdcUtil.setOperationType(operationType.name());
+        MdcUtil.setCurrency(currency.name());
+        MdcUtil.setAmount(request.getAmount().toPlainString());
+
         // Get appropriate handler
         CashOperationHandler handler = handlers.get(operationType);
         if (handler == null) {
@@ -85,15 +92,17 @@ public class CashOperationServiceImpl implements CashOperationService {
                 request.getDenominations()
             );
 
+            // Set transaction ID in MDC for structured logging
+            MdcUtil.setTransactionId(transaction.getId());
+
             // Save updated balance
             balanceRepository.save(cashierName, cashierBalances);
 
             // Save transaction
             transactionRepository.save(transaction);
 
-            // Log success
-            log.info("Cashier {} {} {} {} with denominations {}",
-                cashierName,
+            // Log success with transaction ID in MDC
+            log.info("Cash operation completed successfully: {} {} {} with denominations {}",
                 operationType == OperationType.DEPOSIT ? "deposited" : "withdrew",
                 request.getAmount(),
                 currency,
@@ -114,7 +123,7 @@ public class CashOperationServiceImpl implements CashOperationService {
 
         } catch (Exception e) {
             // Rollback balance on error
-            log.error("Operation failed, rolling back balance for cashier {}", cashierName, e);
+            log.error("Operation failed, rolling back balance", e);
 
             // Restore original denominations
             for (Map.Entry<Integer, Integer> entry : originalDenominations.entrySet()) {

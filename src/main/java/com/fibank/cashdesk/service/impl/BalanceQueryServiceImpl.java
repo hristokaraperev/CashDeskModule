@@ -9,6 +9,7 @@ import com.fibank.cashdesk.model.Transaction;
 import com.fibank.cashdesk.repository.BalanceRepository;
 import com.fibank.cashdesk.repository.TransactionRepository;
 import com.fibank.cashdesk.service.BalanceQueryService;
+import com.fibank.cashdesk.util.MdcUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,6 +59,11 @@ public class BalanceQueryServiceImpl implements BalanceQueryService {
             throw new InvalidDateRangeException("dateFrom must be before or equal to dateTo");
         }
 
+        // Set MDC context for structured logging
+        if (cashier != null) {
+            MdcUtil.setCashier(cashier.toUpperCase());
+        }
+
         // Determine which cashiers to query
         List<String> cashiersToQuery = (cashier != null)
             ? List.of(cashier.toUpperCase())
@@ -85,7 +91,8 @@ public class BalanceQueryServiceImpl implements BalanceQueryService {
             }
         }
 
-        log.info("Balance query for cashier={}, dateFrom={}, dateTo={}", cashier, dateFrom, dateTo);
+        log.info("Balance query completed: {} cashier(s), dateFrom={}, dateTo={}",
+            cashiersToQuery.size(), dateFrom, dateTo);
 
         return new BalanceQueryResponse(cashierBalances);
     }

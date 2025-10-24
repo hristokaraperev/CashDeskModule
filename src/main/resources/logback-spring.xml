@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Console appender with structured logging -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [correlationId=%X{correlationId}] [transactionId=%X{transactionId}] [cashier=%X{cashier}] [operationType=%X{operationType}] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- File appender with structured logging -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/cashdesk.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>logs/cashdesk-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>300MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [correlationId=%X{correlationId}] [transactionId=%X{transactionId}] [cashier=%X{cashier}] [operationType=%X{operationType}] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- JSON appender for structured logging (optional - for production) -->
+    <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/cashdesk-json.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>logs/cashdesk-json-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>300MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <!-- Include MDC fields in JSON output -->
+            <includeMdcKeyName>correlationId</includeMdcKeyName>
+            <includeMdcKeyName>transactionId</includeMdcKeyName>
+            <includeMdcKeyName>cashier</includeMdcKeyName>
+            <includeMdcKeyName>operationType</includeMdcKeyName>
+            <includeMdcKeyName>currency</includeMdcKeyName>
+            <includeMdcKeyName>amount</includeMdcKeyName>
+        </encoder>
+    </appender>
+
+    <!-- Application logger -->
+    <logger name="com.fibank.cashdesk" level="INFO" />
+
+    <!-- Spring framework loggers -->
+    <logger name="org.springframework" level="WARN" />
+    <logger name="org.springframework.web" level="WARN" />
+
+    <!-- Root logger -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE" />
+        <!-- Uncomment for JSON logging in production -->
+        <!-- <appender-ref ref="JSON_FILE" /> -->
+    </root>
+</configuration>
