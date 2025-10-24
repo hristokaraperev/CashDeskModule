@@ -162,4 +162,120 @@ class CashDeskIntegrationTest {
             .andExpect(jsonPath("$.cashiers.length()").value(3))
             .andExpect(jsonPath("$.cashiers[*].cashier").value(org.hamcrest.Matchers.hasItems("MARTINA", "PETER", "LINDA")));
     }
+
+    @Test
+    @DisplayName("Should return period summary with date range parameters")
+    void shouldReturnPeriodSummaryWithDateRange() throws Exception {
+        String cashier = "MARTINA";
+
+        // Record start time
+        java.time.Instant startTime = java.time.Instant.now().minusSeconds(1);
+
+        // Perform multiple transactions
+        // Transaction 1: Deposit 100 BGN
+        Map<Integer, Integer> deposit1 = new HashMap<>();
+        deposit1.put(10, 10);
+        CashOperationRequest req1 = new CashOperationRequest(
+            "DEPOSIT", cashier, "BGN", new BigDecimal("100.00"), deposit1
+        );
+        mockMvc.perform(post("/api/v1/cash-operation")
+                .header(HEADER_NAME, API_KEY)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req1)))
+            .andExpect(status().isOk());
+
+        // Transaction 2: Withdraw 50 BGN
+        Map<Integer, Integer> withdrawal1 = new HashMap<>();
+        withdrawal1.put(50, 1);
+        CashOperationRequest req2 = new CashOperationRequest(
+            "WITHDRAWAL", cashier, "BGN", new BigDecimal("50.00"), withdrawal1
+        );
+        mockMvc.perform(post("/api/v1/cash-operation")
+                .header(HEADER_NAME, API_KEY)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req2)))
+            .andExpect(status().isOk());
+
+        // Transaction 3: Deposit 200 EUR
+        Map<Integer, Integer> deposit2 = new HashMap<>();
+        deposit2.put(50, 4);  // 4x50 = 200 EUR
+        CashOperationRequest req3 = new CashOperationRequest(
+            "DEPOSIT", cashier, "EUR", new BigDecimal("200.00"), deposit2
+        );
+        mockMvc.perform(post("/api/v1/cash-operation")
+                .header(HEADER_NAME, API_KEY)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req3)))
+            .andExpect(status().isOk());
+
+        java.time.Instant endTime = java.time.Instant.now().plusSeconds(1);
+
+        // Query with date range - should return period summary
+        MvcResult result = mockMvc.perform(get("/api/v1/cash-balance")
+                .header(HEADER_NAME, API_KEY)
+                .param("cashier", cashier)
+                .param("dateFrom", startTime.toString())
+                .param("dateTo", endTime.toString()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.cashiers.length()").value(1))
+            .andExpect(jsonPath("$.cashiers[0].cashier").value(cashier))
+            .andExpect(jsonPath("$.cashiers[0].periodSummaries").exists())
+            .andExpect(jsonPath("$.cashiers[0].periodSummaries.length()").value(2))
+            .andReturn();
+
+        // Parse response
+        String responseBody = result.getResponse().getContentAsString();
+        BalanceQueryResponse response = objectMapper.readValue(responseBody, BalanceQueryResponse.class);
+
+        // Verify BGN period summary
+        var bgnSummary = response.getCashiers().get(0).getPeriodSummaries().stream()
+            .filter(s -> s.getCurrency().equals("BGN"))
+            .findFirst()
+            .orElseThrow();
+
+        // Starting balance: 1000 BGN (50x10 + 10x50)
+        assertThat(bgnSummary.getStartingTotal()).isEqualByComparingTo(new BigDecimal("1000.00"));
+        // Net change: +100 - 50 = +50
+        assertThat(bgnSummary.getNetChange()).isEqualByComparingTo(new BigDecimal("50.00"));
+        // Ending balance: 1000 + 50 = 1050
+        assertThat(bgnSummary.getEndingTotal()).isEqualByComparingTo(new BigDecimal("1050.00"));
+        // Should have 2 transactions
+        assertThat(bgnSummary.getTransactions()).hasSize(2);
+
+        // Verify EUR period summary
+        var eurSummary = response.getCashiers().get(0).getPeriodSummaries().stream()
+            .filter(s -> s.getCurrency().equals("EUR"))
+            .findFirst()
+            .orElseThrow();
+
+        // Starting balance: 2000 EUR (100x10 + 20x50)
+        assertThat(eurSummary.getStartingTotal()).isEqualByComparingTo(new BigDecimal("2000.00"));
+        // Net change: +200
+        assertThat(eurSummary.getNetChange()).isEqualByComparingTo(new BigDecimal("200.00"));
+        // Ending balance: 2000 + 200 = 2200
+        assertThat(eurSummary.getEndingTotal()).isEqualByComparingTo(new BigDecimal("2200.00"));
+        // Should have 1 transaction
+        assertThat(eurSummary.getTransactions()).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("Should return current balance when no date range specified")
+    void shouldReturnCurrentBalanceWithoutDateRange() throws Exception {
+        // Query without date range - should return current balance
+        MvcResult result = mockMvc.perform(get("/api/v1/cash-balance")
+                .header(HEADER_NAME, API_KEY)
+                .param("cashier", "MARTINA"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.cashiers.length()").value(1))
+            .andExpect(jsonPath("$.cashiers[0].cashier").value("MARTINA"))
+            .andExpect(jsonPath("$.cashiers[0].balances").exists())
+            .andExpect(jsonPath("$.cashiers[0].periodSummaries").doesNotExist())
+            .andReturn();
+
+        String responseBody = result.getResponse().getContentAsString();
+        BalanceQueryResponse response = objectMapper.readValue(responseBody, BalanceQueryResponse.class);
+
+        // Should have balances for both currencies
+        assertThat(response.getCashiers().get(0).getBalances()).hasSize(2);
+    }
 }
