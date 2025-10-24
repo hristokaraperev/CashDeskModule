@@ -41,7 +41,7 @@ class CashOperationControllerIdempotencyTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Value("${cashdesk.security.api-key}")
+    @Value("${cashdesk.security.test-api-key}")
     private String apiKey;
 
     @Value("${cashdesk.security.header-name}")
@@ -83,7 +83,7 @@ class CashOperationControllerIdempotencyTest {
     @DisplayName("Should cache response when idempotency key is provided")
     void processOperation_WithIdempotencyKey_CachesResponse() throws Exception {
         // Arrange
-        String idempotencyKey = "test-" + UUID.randomUUID();
+        String idempotencyKey = UUID.randomUUID().toString();
         CashOperationRequest request = createDepositRequest();
 
         // Act - First request
@@ -118,7 +118,7 @@ class CashOperationControllerIdempotencyTest {
     @DisplayName("Should return same transaction ID for duplicate requests")
     void processOperation_DuplicateRequest_ReturnsSameTransactionId() throws Exception {
         // Arrange
-        String idempotencyKey = "test-" + UUID.randomUUID();
+        String idempotencyKey = UUID.randomUUID().toString();
         CashOperationRequest request = createDepositRequest();
 
         // Act - First request
@@ -153,8 +153,8 @@ class CashOperationControllerIdempotencyTest {
     @DisplayName("Should treat different idempotency keys as separate requests")
     void processOperation_DifferentKeys_ProcessesSeparately() throws Exception {
         // Arrange
-        String idempotencyKey1 = "test-" + UUID.randomUUID();
-        String idempotencyKey2 = "test-" + UUID.randomUUID();
+        String idempotencyKey1 = UUID.randomUUID().toString();
+        String idempotencyKey2 = UUID.randomUUID().toString();
         CashOperationRequest request = createDepositRequest();
 
         // Act - First request
@@ -186,45 +186,33 @@ class CashOperationControllerIdempotencyTest {
     }
 
     @Test
-    @DisplayName("Should handle blank idempotency key as no key provided")
+    @DisplayName("Should reject blank idempotency key")
     void processOperation_BlankIdempotencyKey_ProcessesNormally() throws Exception {
         // Arrange
         CashOperationRequest request = createDepositRequest();
 
-        // Act - Request with blank idempotency key
+        // Act & Assert - Request with blank idempotency key should be rejected
         mockMvc.perform(post("/api/v1/cash-operation")
                         .header(authHeaderName, apiKey)
                         .header("Idempotency-Key", "   ")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.transactionId").exists());
-
-        // Act - Second request with blank idempotency key
-        MvcResult result = mockMvc.perform(post("/api/v1/cash-operation")
-                        .header(authHeaderName, apiKey)
-                        .header("Idempotency-Key", "   ")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.transactionId").exists())
-                .andReturn();
-
-        // Assert - should process as new request (blank keys are ignored)
-        assertThat(result.getResponse().getStatus()).isEqualTo(200);
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Idempotency-Key header is required for all cash operations"));
     }
 
     @Test
     @DisplayName("Should work correctly for withdrawal operations with idempotency")
     void processOperation_Withdrawal_WithIdempotency_Success() throws Exception {
         // Arrange
-        String idempotencyKey = "test-" + UUID.randomUUID();
+        String idempotencyKey = UUID.randomUUID().toString();
         CashOperationRequest depositRequest = createDepositRequest();
         CashOperationRequest withdrawalRequest = createWithdrawalRequest();
 
         // Act - First deposit to ensure balance
         mockMvc.perform(post("/api/v1/cash-operation")
                         .header(authHeaderName, apiKey)
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(depositRequest)))
                 .andExpect(status().isOk());
@@ -263,7 +251,7 @@ class CashOperationControllerIdempotencyTest {
     @DisplayName("Should handle sequential duplicate requests with same idempotency key")
     void processOperation_SequentialDuplicates_ReturnsCachedResponse() throws Exception {
         // Arrange
-        String idempotencyKey = "test-" + UUID.randomUUID();
+        String idempotencyKey = UUID.randomUUID().toString();
         CashOperationRequest request = createDepositRequest();
         String requestJson = objectMapper.writeValueAsString(request);
 
