@@ -218,7 +218,7 @@ class BalanceQueryServiceImplTest {
         );
         transactions.add(withdrawal);
 
-        when(transactionRepository.findByCashierAndDateRange("MARTINA", dateFrom, dateTo))
+        when(transactionRepository.findByCashierAndDateRange(eq("MARTINA"), any(), any()))
             .thenReturn(transactions);
 
         // Act
@@ -228,16 +228,22 @@ class BalanceQueryServiceImplTest {
         assertThat(response.getCashiers()).hasSize(1);
         CashierBalanceDTO cashierBalance = response.getCashiers().get(0);
 
-        // Should have deposited 600 and withdrawn 100 = 500 net
-        assertThat(cashierBalance.getBalances())
-            .filteredOn(b -> b.getCurrency().equals("BGN"))
+        // Should have period summaries with deposited 600 and withdrawn 100 = 500 net
+        assertThat(cashierBalance.getPeriodSummaries())
+            .filteredOn(s -> s.getCurrency().equals("BGN"))
             .first()
             .satisfies(bgn -> {
-                assertThat(bgn.getTotal()).isEqualByComparingTo(new BigDecimal("500.00"));
-                // 10: deposited 10, withdrew 5 = 5 remaining
-                // 50: deposited 10, withdrew 1 = 9 remaining
-                assertThat(bgn.getDenominations().get(10)).isEqualTo(5);
-                assertThat(bgn.getDenominations().get(50)).isEqualTo(9);
+                // Starting balance should be 1000 (initial BGN balance)
+                assertThat(bgn.getStartingTotal()).isEqualByComparingTo(new BigDecimal("1000"));
+                // Net change: +600 - 100 = +500
+                assertThat(bgn.getNetChange()).isEqualByComparingTo(new BigDecimal("500.00"));
+                // Ending balance: 1000 + 500 = 1500
+                assertThat(bgn.getEndingTotal()).isEqualByComparingTo(new BigDecimal("1500.00"));
+                // Ending denominations: initial(50x10 + 10x50) + deposited 10x10 + 10x50 - withdrawn 5x10 - 1x50
+                // 10: 50 + 10 - 5 = 55
+                // 50: 10 + 10 - 1 = 19
+                assertThat(bgn.getEndingDenominations().get(10)).isEqualTo(55);
+                assertThat(bgn.getEndingDenominations().get(50)).isEqualTo(19);
             });
     }
 
@@ -247,7 +253,8 @@ class BalanceQueryServiceImplTest {
         Instant dateFrom = Instant.now().minus(365, ChronoUnit.DAYS);
         Instant dateTo = dateFrom.plus(1, ChronoUnit.DAYS);
 
-        when(transactionRepository.findByCashierAndDateRange("LINDA", dateFrom, dateTo))
+        // Stub for calculating starting balance (null, null)
+        when(transactionRepository.findByCashierAndDateRange(eq("LINDA"), any(), any()))
             .thenReturn(Collections.emptyList());
 
         BalanceQueryResponse response = balanceQueryService.queryBalance(dateFrom, dateTo, "LINDA");
@@ -255,10 +262,32 @@ class BalanceQueryServiceImplTest {
         assertThat(response.getCashiers()).hasSize(1);
         CashierBalanceDTO cashierBalance = response.getCashiers().get(0);
 
-        // All currencies should have zero balance
-        assertThat(cashierBalance.getBalances()).allSatisfy(balance ->
-            assertThat(balance.getTotal()).isEqualByComparingTo(BigDecimal.ZERO)
-        );
+        // Should have period summaries (not regular balances)
+        // No transactions, so starting balance equals ending balance (initial balances)
+        assertThat(cashierBalance.getPeriodSummaries()).isNotNull();
+        assertThat(cashierBalance.getPeriodSummaries()).hasSize(2); // BGN and EUR
+
+        // Check BGN - initial 1000 BGN
+        assertThat(cashierBalance.getPeriodSummaries())
+            .filteredOn(s -> s.getCurrency().equals("BGN"))
+            .first()
+            .satisfies(bgn -> {
+                assertThat(bgn.getStartingTotal()).isEqualByComparingTo(new BigDecimal("1000"));
+                assertThat(bgn.getEndingTotal()).isEqualByComparingTo(new BigDecimal("1000"));
+                assertThat(bgn.getNetChange()).isEqualByComparingTo(BigDecimal.ZERO);
+                assertThat(bgn.getTransactions()).isEmpty();
+            });
+
+        // Check EUR - initial 2000 EUR
+        assertThat(cashierBalance.getPeriodSummaries())
+            .filteredOn(s -> s.getCurrency().equals("EUR"))
+            .first()
+            .satisfies(eur -> {
+                assertThat(eur.getStartingTotal()).isEqualByComparingTo(new BigDecimal("2000"));
+                assertThat(eur.getEndingTotal()).isEqualByComparingTo(new BigDecimal("2000"));
+                assertThat(eur.getNetChange()).isEqualByComparingTo(BigDecimal.ZERO);
+                assertThat(eur.getTransactions()).isEmpty();
+            });
     }
 
     @Test
@@ -266,7 +295,7 @@ class BalanceQueryServiceImplTest {
     void shouldHandleOnlyDateFrom() {
         Instant dateFrom = Instant.now().minus(7, ChronoUnit.DAYS);
 
-        when(transactionRepository.findByCashierAndDateRange(eq("PETER"), eq(dateFrom), eq(null)))
+        when(transactionRepository.findByCashierAndDateRange(eq("PETER"), any(), any()))
             .thenReturn(Collections.emptyList());
 
         BalanceQueryResponse response = balanceQueryService.queryBalance(dateFrom, null, "PETER");
@@ -295,7 +324,7 @@ class BalanceQueryServiceImplTest {
         Instant dateFrom = Instant.now().minus(7, ChronoUnit.DAYS);
         Instant dateTo = Instant.now();
 
-        when(transactionRepository.findByCashierAndDateRange("LINDA", dateFrom, dateTo))
+        when(transactionRepository.findByCashierAndDateRange(eq("LINDA"), any(), any()))
             .thenReturn(Collections.emptyList());
 
         BalanceQueryResponse response = balanceQueryService.queryBalance(dateFrom, dateTo, "LINDA");
@@ -328,17 +357,20 @@ class BalanceQueryServiceImplTest {
             "PETER", OperationType.DEPOSIT, Currency.BGN, new BigDecimal("200.00"), deposit2
         ));
 
-        when(transactionRepository.findByCashierAndDateRange("PETER", dateFrom, dateTo))
+        when(transactionRepository.findByCashierAndDateRange(eq("PETER"), any(), any()))
             .thenReturn(transactions);
 
         BalanceQueryResponse response = balanceQueryService.queryBalance(dateFrom, dateTo, "PETER");
 
-        assertThat(response.getCashiers().get(0).getBalances())
-            .filteredOn(b -> b.getCurrency().equals("BGN"))
+        assertThat(response.getCashiers().get(0).getPeriodSummaries())
+            .filteredOn(s -> s.getCurrency().equals("BGN"))
             .first()
             .satisfies(bgn -> {
-                assertThat(bgn.getTotal()).isEqualByComparingTo(new BigDecimal("300.00"));
-                assertThat(bgn.getDenominations().get(10)).isEqualTo(30); // 10 + 20
+                // Starting: 1000 BGN (initial), Deposited: 100 + 200 = 300, Ending: 1300
+                assertThat(bgn.getStartingTotal()).isEqualByComparingTo(new BigDecimal("1000"));
+                assertThat(bgn.getEndingTotal()).isEqualByComparingTo(new BigDecimal("1300.00"));
+                // Initial: 50x10, Deposited: 10x10 + 20x10 = 30x10, Total: 80x10
+                assertThat(bgn.getEndingDenominations().get(10)).isEqualTo(80);
             });
     }
 
@@ -357,18 +389,22 @@ class BalanceQueryServiceImplTest {
             "LINDA", OperationType.DEPOSIT, Currency.EUR, new BigDecimal("200.00"), eurDenoms
         ));
 
-        when(transactionRepository.findByCashierAndDateRange("LINDA", dateFrom, dateTo))
+        when(transactionRepository.findByCashierAndDateRange(eq("LINDA"), any(), any()))
             .thenReturn(transactions);
 
         BalanceQueryResponse response = balanceQueryService.queryBalance(dateFrom, dateTo, "LINDA");
 
-        assertThat(response.getCashiers().get(0).getBalances())
-            .filteredOn(b -> b.getCurrency().equals("EUR"))
+        assertThat(response.getCashiers().get(0).getPeriodSummaries())
+            .filteredOn(s -> s.getCurrency().equals("EUR"))
             .first()
             .satisfies(eur -> {
-                assertThat(eur.getTotal()).isEqualByComparingTo(new BigDecimal("200.00"));
-                assertThat(eur.getDenominations().get(20)).isEqualTo(5);
-                assertThat(eur.getDenominations().get(50)).isEqualTo(2);
+                // Starting: 2000 EUR (initial), Deposited: 200, Ending: 2200
+                assertThat(eur.getStartingTotal()).isEqualByComparingTo(new BigDecimal("2000"));
+                assertThat(eur.getEndingTotal()).isEqualByComparingTo(new BigDecimal("2200.00"));
+                // Initial: 0x20, Deposited: 5x20, Total: 5x20
+                assertThat(eur.getEndingDenominations().get(20)).isEqualTo(5);
+                // Initial: 20x50, Deposited: 2x50, Total: 22x50
+                assertThat(eur.getEndingDenominations().get(50)).isEqualTo(22);
             });
     }
 

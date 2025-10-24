@@ -123,20 +123,35 @@ public class FileTransactionRepository implements TransactionRepository {
     private Transaction parseTransaction(String line) {
         String[] parts = line.split("\\|");
 
-        if (parts.length != 6) {
-            throw new DataCorruptionException("Invalid transaction format: expected 6 fields, got " + parts.length);
+        // Support both old format (6 fields without UUID) and new format (7 fields with UUID)
+        if (parts.length != 6 && parts.length != 7) {
+            throw new DataCorruptionException("Invalid transaction format: expected 6 or 7 fields, got " + parts.length);
         }
 
         try {
-            Instant timestamp = Instant.parse(parts[0]);
-            String cashier = parts[1];
-            OperationType operationType = OperationType.valueOf(parts[2]);
-            Currency currency = Currency.valueOf(parts[3]);
-            BigDecimal amount = new BigDecimal(parts[4]);
-            Map<Integer, Integer> denominations = parseDenominations(parts[5]);
+            UUID id;
+            int offset;
+
+            if (parts.length == 7) {
+                // New format with UUID as first field
+                id = UUID.fromString(parts[0]);
+                offset = 1;
+            } else {
+                // Old format without UUID - generate new one for backward compatibility
+                id = UUID.randomUUID();
+                offset = 0;
+                log.warn("Loading transaction in old format (without UUID): {}", line);
+            }
+
+            Instant timestamp = Instant.parse(parts[offset]);
+            String cashier = parts[offset + 1];
+            OperationType operationType = OperationType.valueOf(parts[offset + 2]);
+            Currency currency = Currency.valueOf(parts[offset + 3]);
+            BigDecimal amount = new BigDecimal(parts[offset + 4]);
+            Map<Integer, Integer> denominations = parseDenominations(parts[offset + 5]);
 
             return new Transaction(
-                UUID.randomUUID(), // Generate new UUID for loaded transactions
+                id,
                 timestamp,
                 cashier,
                 operationType,
@@ -176,7 +191,8 @@ public class FileTransactionRepository implements TransactionRepository {
             .map(e -> e.getKey() + ":" + e.getValue())
             .collect(Collectors.joining(","));
 
-        return String.format("%s|%s|%s|%s|%s|%s",
+        return String.format("%s|%s|%s|%s|%s|%s|%s",
+            transaction.getId().toString(),
             transaction.getTimestamp().toString(),
             transaction.getCashier(),
             transaction.getOperationType(),
